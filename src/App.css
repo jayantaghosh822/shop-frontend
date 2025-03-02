@@ -36,3 +36,56 @@
     transform: rotate(360deg);
   }
 }
+
+.formshow {
+  position: fixed; /* Make the form float above the page */
+  top: 50%; /* Center the form vertically */
+  left: 50%; /* Center the form horizontally */
+  transform: translate(-50%, -50%); /* Offset by half the form's height and width */
+  z-index: 1000; /* Make sure the form appears above other content */
+  background-color: #fff; /* Set background color to white */
+  border-radius: 8px; /* Optional: rounded corners for the form container */
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); /* Floating shadow effect */
+  padding: 20px;
+  width: 300px;
+  display: block;
+}
+
+.formhide {
+  display: none;
+}
+
+/* Close button (cross) styling */
+#close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: #333;
+  cursor: pointer;
+}
+
+/* Styling for the input fields */
+input {
+  display: block;
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+}
+
+/* Focus styling for inputs */
+input:focus {
+  border-color: #007BFF;
+  outline: none;
+}
+
+/* Label styling */
+label {
+  display: block;
+  margin-bottom: 5px;
+}
+
