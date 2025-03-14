@@ -1,52 +1,42 @@
 import logo from './logo.svg';
 import './App.css';
-import HomePage from './Components/HomePage';
+import HomePage from './Pages/User/HomePage';
+import Store from './Pages/User/Category';
+import AdminDashboard from './Pages/Admin/AdminDashboard';
+import AdminDashboardHome from './Pages/Admin/AdminDashboardHome';
+import CreateCategory from './Pages/Admin/Category';
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import React, { useEffect } from "react";
 // Import jQuery if using it (since React doesn't include it by default)
 // import $ from "jquery";
 
 const App = () => {
-  useEffect(() => {
-    // Dynamically load JS scripts after the component mounts
-    const loadScripts = () => {
-      const scriptSources = [
-        "./assets/js/jquery-3.3.1.min.js",
-        "./assets/js/bootstrap.min.js",
-        "./assets/js/jquery.nice-select.min.js",
-        "./assets/js/jquery.nicescroll.min.js",
-        "./assets/js/jquery.magnific-popup.min.js",
-        "./assets/js/jquery.countdown.min.js",
-        "./assets/js/jquery.slicknav.js",
-        "./assets/js/mixitup.min.js",
-        "./assets/js/owl.carousel.min.js",
-        "./assets/js/main.js"
-      ];
 
-      scriptSources.forEach((src) => {
-        const script = document.createElement("script");
-        script.src = src;
-        script.async = true;
-        script.onload = () => {
-          console.log(`${src} loaded successfully.`);
-        };
-        script.onerror = () => {
-          console.error(`Error loading ${src}`);
-        };
-        document.body.appendChild(script);
-      });
-    };
-
-    // Call the function to load scripts after component mounts
-    loadScripts();
-
-    // Clean up by removing the scripts when the component unmounts
-    return () => {
-      const scripts = document.querySelectorAll("script");
-      scripts.forEach((script) => script.remove());
-    };
-  }, []); // Empty dependency array ensures this only runs once after initial render
   return (
-    <HomePage />
+    <BrowserRouter>
+      <Routes>
+        {/* <Route path="/" element={<Layout />}> */}
+          <Route index element={<HomePage />} />
+          {/* <Route path="blogs" element={<Blogs />} />
+          <Route path="contact" element={<Contact />} /> */}
+          <Route path="/store" element={<Store />} />
+          <Route path="/:category/:subcategory" element={<Store />} />
+
+
+            <Route path="/admin" element={<AdminDashboard />}>
+              <Route index element={<AdminDashboardHome />} />
+              {/* <Route path="categories" element={<AllCategories />} /> */}
+              <Route path="categories/create" element={<CreateCategory />} />
+              
+            </Route>
+
+
+
+          {/* <Route path="/create-product" element={<CreateProduct />} /> */}
+        {/* </Route> */}
+      </Routes>
+    </BrowserRouter>
+    // <Store />
   );
 }
 
