@@ -4,7 +4,10 @@ import HomePage from './Pages/User/HomePage';
 import Store from './Pages/User/Category';
 import AdminDashboard from './Pages/Admin/AdminDashboard';
 import AdminDashboardHome from './Pages/Admin/AdminDashboardHome';
-import CreateCategory from './Pages/Admin/Category';
+import CategoryLayout from './Pages/Admin/CategoryLayout';
+import CreateCategory from './Pages/Admin/CreateCategory';
+import EditCategory from './Pages/Admin/EditCategory';
+import AllCategories from './Pages/Admin/AllCategory';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import React, { useEffect } from "react";
 // Import jQuery if using it (since React doesn't include it by default)
@@ -26,7 +29,12 @@ const App = () => {
             <Route path="/admin" element={<AdminDashboard />}>
               <Route index element={<AdminDashboardHome />} />
               {/* <Route path="categories" element={<AllCategories />} /> */}
-              <Route path="categories/create" element={<CreateCategory />} />
+              <Route path="category" elemnt={<CategoryLayout />}>
+               <Route index element={<AllCategories />} />
+               <Route path="create" element={<CreateCategory/>} />
+               <Route path="edit/:slug" element={<EditCategory/>} />
+              </Route>
+              {/* <Route path="categories/all" element={<Categories />} /> */}
               
             </Route>
 

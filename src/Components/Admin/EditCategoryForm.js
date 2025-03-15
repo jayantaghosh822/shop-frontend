@@ -1,48 +1,63 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { ToastContainer, toast } from "react-toastify";
+import { useParams } from "react-router-dom";
 
-const CategoryForm = () => {
-  const [categoryList, setCategoryList] = useState([]);
-  const [error, setError] = useState(false);
+const EditCategoryForm = () => {
+    const { slug } = useParams(); // <-- this gives you the id from the URL
+    const [categoryList, setCategoryList] = useState([]);
+    const [error, setError] = useState(false);
+    const [catId , setCatID] = useState('');
+    const [Category, setCategoryForm] = useState({
+        categoryName: '',
+        categorySlug: '',
+        categoryParentId: '',
+    });
 
-  const [Category, setCategoryForm] = useState({
-    categoryName: '',
-    categorySlug: '',
-    categoryParentId: '',
-  });
+    useEffect(() => {
+        const fetchCategoryDetails = async () => {
+        try {
+            const backendUrl = process.env.REACT_APP_BACKEND_URL;
+            const response = await axios.get(`${backendUrl}/api/category/${slug}`);
+            const category = (response.data.category);
+            console.log(category);
+            console.log(category._id);
+            setCatID(category._id);
+            setCategoryForm({
+              categoryName: category.name,
+              categorySlug: category.slug,
+              categoryParentId:  category.parent,
+            }); 
+        } catch (err) {
+            console.error(err);
+            setError(true);
+        }
+        };
+        fetchCategoryDetails();
+        const Categories = async () => {
+          try {
+              const backendUrl = process.env.REACT_APP_BACKEND_URL;
+              const response = await axios.get(`${backendUrl}/api/categories`);
+              console.log(response.data.categories);
+              setCategoryList(response.data.categories); // <-- assuming API returns a list
+          } catch (err) {
+              console.error(err);
+              setError(true);
+          }
+          };
+          Categories();
+    }, []);
 
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const backendUrl = process.env.REACT_APP_BACKEND_URL;
-        const response = await axios.get(`${backendUrl}/api/categories`);
-        console.log(response);
-        setCategoryList(response.data.categories); // <-- assuming API returns a list
-      } catch (err) {
-        console.error(err);
-        setError(true);
-      }
-    };
-    fetchCategories();
-  }, []);
+    const onChange = (event) => {
+        const { name, value } = event.target;
 
-  const onChange = (event) => {
-    const { name, value } = event.target;
-    if(name == 'categoryName'){
-      setCategoryForm({
-        ...Category,
-        [name]: convertFirstLetterToUppercase(value),
-        ['categorySlug']:convertToSlug(value),
-      });
-    }else{
-      setCategoryForm({
-        ...Category,
-        [name]:value
-      })
-    }
-    
-    
+        setCategoryForm({
+            ...Category,
+            [name]:value
+        })
+        
+        
+        
     }
    
   const convertFirstLetterToUppercase = (title) =>{
@@ -63,15 +78,16 @@ const CategoryForm = () => {
   }
   const categoryFormSubmit = async(event) => {
     event.preventDefault();
-    console.log(Category); // or send it to backend
+    console.log(catId); // or send it to backend
     const categoryFormat = {
       "name":Category.categoryName,
       "slug":Category.categorySlug,
       "parent":Category.categoryParentId?Category.categoryParentId:null
     }
     try {
+      // alert (catId);
       const backendUrl = process.env.REACT_APP_BACKEND_URL;
-      const response = await axios.post(`${backendUrl}/api/save-category`,categoryFormat);
+      const response = await axios.put(`${backendUrl}/api/category/edit/${catId}`,categoryFormat);
       console.log(response);
       if(response.data.success){
         // alert("success");
@@ -137,8 +153,8 @@ const CategoryForm = () => {
               type="text"
               name="categorySlug"
               className="form-control"
-              onChange={onChange}
               value={Category.categorySlug}
+              readOnly 
               id="categorySlug"
               placeholder="jeans"
             />
@@ -155,7 +171,7 @@ const CategoryForm = () => {
             >
               <option value="">Choose...</option>
               {categoryList.map((cat) => (
-                <option key={cat._id} value={cat._id}>
+                <option key={cat._id} value={cat._id} >
                   {cat.name}
                 </option>
               ))}
@@ -166,7 +182,7 @@ const CategoryForm = () => {
           </div>
 
           <button type="submit" className="btn btn-primary">
-            Create
+            Save
           </button>
         </div>
       </form>
@@ -174,4 +190,4 @@ const CategoryForm = () => {
   );
 };
 
-export default CategoryForm;
+export default EditCategoryForm;

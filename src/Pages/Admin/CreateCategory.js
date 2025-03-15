@@ -8,7 +8,6 @@ const CreateCategory = ()=>{
    
     return(
         <>
-          <AdminSidebar />
          <CategoryForm />
         </>
        
