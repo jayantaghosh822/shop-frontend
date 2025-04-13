@@ -5,12 +5,70 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import useScript from "../../Hooks/jsLoader";
 import Layout from "../../Layouts/User/Layout";
+import { useParams } from "react-router-dom";
 // import { useDispatch } from "react-redux";
 // import { loginSuccess } from "../redux/authSlice";
 const Store = ({ children }) =>{
     useScript([
         "/assets/js/main.js",
     ]);
+    const [catProducts,setCatProducts] = useState([]);
+    const [productBrands,setBrands] = useState([]);
+    const [productColors,setColors] = useState([]);
+    const [productPrices,setPrices] = useState([]);
+    const { category, subcategory } = useParams();
+    // alert(category);
+    // alert(subcategory);
+    useEffect(() => {
+        const fetchProductByCat = async () => {
+            const backendUrl = process.env.REACT_APP_BACKEND_URL;
+          try {
+            const response = await axios.get(`${backendUrl}/api/product-by-category`, {
+              params: {
+                category: subcategory,
+              }
+            });
+            setCatProducts(response.data.products);
+            let priceArray = [];
+            response.data.products.forEach(pro => {
+                const size = pro.size;
+                const prices = size.map(eachSize => eachSize.price);
+                // console.log(prices);
+                const min = Math.min(...prices);
+                const max = Math.max(...prices);
+                console.log(min);
+                console.log(max);
+                if(!(priceArray.includes(min))){
+                    priceArray[priceArray.length] = min;
+                }
+                if(!(priceArray.includes(max))){
+                    priceArray[priceArray.length] = max;
+                }
+               
+            });
+           
+            setPrices(priceArray);
+            setBrands(response.data.brands);
+            setColors(response.data.colors);
+            console.log(response);
+          } catch (err) {
+            console.error(err);
+          }
+        };
+      
+        fetchProductByCat();
+    }, []);
+
+    const getPrice = (size) => {
+        if (!Array.isArray(size) || size.length === 0) return "N/A";
+    
+        const prices = size.map(eachSize => eachSize.price);
+        
+        const min = Math.min(...prices);
+        const max = Math.max(...prices);
+        
+        return `${min}-${max}`;
+    };
     return(
         <>
          <Layout>
@@ -47,28 +105,8 @@ const Store = ({ children }) =>{
                         </div>
                         <div className="shop__sidebar__accordion">
                             <div className="accordion" id="accordionExample">
-                            <div className="card">
-                                <div className="card-heading">
-                                <a data-toggle="collapse" data-target="#collapseOne">Categories</a>
-                                </div>
-                                <div id="collapseOne" className="collapse show" data-parent="#accordionExample">
-                                <div className="card-body">
-                                    <div className="shop__sidebar__categories">
-                                    <ul className="nice-scroll">
-                                        <li><a href="#">Men (20)</a></li>
-                                        <li><a href="#">Women (20)</a></li>
-                                        <li><a href="#">Bags (20)</a></li>
-                                        <li><a href="#">Clothing (20)</a></li>
-                                        <li><a href="#">Shoes (20)</a></li>
-                                        <li><a href="#">Accessories (20)</a></li>
-                                        <li><a href="#">Kids (20)</a></li>
-                                        <li><a href="#">Kids (20)</a></li>
-                                        <li><a href="#">Kids (20)</a></li>
-                                    </ul>
-                                    </div>
-                                </div>
-                                </div>
-                            </div>
+                            
+
                             <div className="card">
                                 <div className="card-heading">
                                 <a data-toggle="collapse" data-target="#collapseTwo">Branding</a>
@@ -77,10 +115,14 @@ const Store = ({ children }) =>{
                                 <div className="card-body">
                                     <div className="shop__sidebar__brand">
                                     <ul>
-                                        <li><a href="#">Louis Vuitton</a></li>
-                                        <li><a href="#">Chanel</a></li>
-                                        <li><a href="#">Hermes</a></li>
-                                        <li><a href="#">Gucci</a></li>
+                                        {productBrands.map((brand)=>{
+                                            return(
+                                                <li><a href="#">{brand.name}</a></li>
+                                            );
+                                           
+                                        })}
+                                        
+                                        
                                     </ul>
                                     </div>
                                 </div>
@@ -93,6 +135,7 @@ const Store = ({ children }) =>{
                                 <div id="collapseThree" className="collapse show" data-parent="#accordionExample">
                                 <div className="card-body">
                                     <div className="shop__sidebar__price">
+                                        {console.log(productPrices)}
                                     <ul>
                                         <li><a href="#">$0.00 - $50.00</a></li>
                                         <li><a href="#">$50.00 - $100.00</a></li>
@@ -146,39 +189,21 @@ const Store = ({ children }) =>{
                                 </div>
                                 <div id="collapseFive" className="collapse show" data-parent="#accordionExample">
                                 <div className="card-body">
-                                    <div className="shop__sidebar__color">
-                                    <label className="c-1" htmlFor="sp-1">
-                                        <input type="radio" id="sp-1" />
-                                    </label>
-                                    <label className="c-2" htmlFor="sp-2">
-                                        <input type="radio" id="sp-2" />
-                                    </label>
-                                    <label className="c-3" htmlFor="sp-3">
-                                        <input type="radio" id="sp-3" />
-                                    </label>
-                                    <label className="c-4" htmlFor="sp-4">
-                                        <input type="radio" id="sp-4" />
-                                    </label>
-                                    <label className="c-5" htmlFor="sp-5">
-                                        <input type="radio" id="sp-5" />
-                                    </label>
-                                    <label className="c-6" htmlFor="sp-6">
-                                        <input type="radio" id="sp-6" />
-                                    </label>
-                                    <label className="c-7" htmlFor="sp-7">
-                                        <input type="radio" id="sp-7" />
-                                    </label>
-                                    <label className="c-8" htmlFor="sp-8">
-                                        <input type="radio" id="sp-8" />
-                                    </label>
-                                    <label className="c-9" htmlFor="sp-9">
-                                        <input type="radio" id="sp-9" />
-                                    </label>
+                                    <div className="shop__sidebar__size">
+                                        {productColors.map((color)=>{
+                                            return(
+                                                <label htmlFor="xs" className="box-color">{color.name}
+                                                    <input type="radio" id="xs" />
+                                                </label>
+                                            );
+                                        })}
+                                   
+                                    
                                     </div>
                                 </div>
                                 </div>
                             </div>
-                            <div className="card">
+                            {/* <div className="card">
                                 <div className="card-heading">
                                 <a data-toggle="collapse" data-target="#collapseSix">Tags</a>
                                 </div>
@@ -195,7 +220,7 @@ const Store = ({ children }) =>{
                                     </div>
                                 </div>
                                 </div>
-                            </div>
+                            </div> */}
                             </div>
                         </div>
                         </div>
@@ -221,430 +246,50 @@ const Store = ({ children }) =>{
                         </div>
                         </div>
                         <div className="row">
-                        <div className="col-lg-4 col-md-6 col-sm-6">
-                            <div className="product__item">
-                            <div className="product__item__pic set-bg" data-setbg="/assets/img/product/product-2.jpg">
-                                <ul className="product__hover">
-                                <li><a href="#"><img src="/assets/img/icon/heart.png" alt="" /></a></li>
-                                <li><a href="#"><img src="/assets/img/icon/compare.png" alt="" /> <span>Compare</span></a>
-                                </li>
-                                <li><a href="#"><img src="/assets/img/icon/search.png" alt="" /></a></li>
-                                </ul>
-                            </div>
-                            <div className="product__item__text">
-                                <h6>Piqué Biker Jacket</h6>
-                                <a href="#" className="add-cart">+ Add To Cart</a>
-                                <div className="rating">
-                                <i className="fa fa-star-o" />
-                                <i className="fa fa-star-o" />
-                                <i className="fa fa-star-o" />
-                                <i className="fa fa-star-o" />
-                                <i className="fa fa-star-o" />
+                        {console.log(catProducts)}
+                        { catProducts.map((elem)=>{
+                            return(
+                            <div key={elem._id} className="col-lg-4 col-md-6 col-sm-6">
+                                <div className="product__item">
+                                <div className="product__item__pic set-bg" data-setbg={elem.images.mainImage}>
+                                    <ul className="product__hover">
+                                    <li><a href="#"><img src="/assets/img/icon/heart.png" alt="" /></a></li>
+                                    {/* <li><a href="#"><img src="/assets/img/icon/compare.png" alt="" /> <span>Compare</span></a>
+                                    </li>
+                                    <li><a href="#"><img src="/assets/img/icon/search.png" alt="" /></a>
+                                    </li> */}
+                                    </ul>
                                 </div>
-                                <h5>$67.24</h5>
-                                <div className="product__color__select">
-                                <label htmlFor="pc-4">
-                                    <input type="radio" id="pc-4" />
-                                </label>
-                                <label className="active black" htmlFor="pc-5">
-                                    <input type="radio" id="pc-5" />
-                                </label>
-                                <label className="grey" htmlFor="pc-6">
-                                    <input type="radio" id="pc-6" />
-                                </label>
+                                <div className="product__item__text">
+                                    <h6>{elem.name}</h6>
+                                    <a href="#" className="add-cart">+ Add To Cart</a>
+                                    <div className="rating">
+                                    <i className="fa fa-star-o" />
+                                    <i className="fa fa-star-o" />
+                                    <i className="fa fa-star-o" />
+                                    <i className="fa fa-star-o" />
+                                    <i className="fa fa-star-o" />
+                                    </div>
+                                    <h5>${getPrice(elem.size)}</h5>
+                                    <div className="product__color__select">
+                                    {/* <label htmlFor="pc-4">
+                                        <input type="radio" id="pc-4" />
+                                    </label>
+                                    <label className="active black" htmlFor="pc-5">
+                                        <input type="radio" id="pc-5" />
+                                    </label>
+                                    <label className="grey" htmlFor="pc-6">
+                                        <input type="radio" id="pc-6" />
+                                    </label> */}
+                                    </div>
                                 </div>
-                            </div>
-                            </div>
-                        </div>
-                        <div className="col-lg-4 col-md-6 col-sm-6">
-                            <div className="product__item sale">
-                            <div className="product__item__pic set-bg" data-setbg="/assets/img/product/product-3.jpg">
-                                <span className="label">Sale</span>
-                                <ul className="product__hover">
-                                <li><a href="#"><img src="/assets/img/icon/heart.png" alt="" /></a></li>
-                                <li><a href="#"><img src="/assets/img/icon/compare.png" alt="" /> <span>Compare</span></a>
-                                </li>
-                                <li><a href="#"><img src="/assets/img/icon/search.png" alt="" /></a></li>
-                                </ul>
-                            </div>
-                            <div className="product__item__text">
-                                <h6>Multi-pocket Chest Bag</h6>
-                                <a href="#" className="add-cart">+ Add To Cart</a>
-                                <div className="rating">
-                                <i className="fa fa-star" />
-                                <i className="fa fa-star" />
-                                <i className="fa fa-star" />
-                                <i className="fa fa-star" />
-                                <i className="fa fa-star-o" />
-                                </div>
-                                <h5>$43.48</h5>
-                                <div className="product__color__select">
-                                <label htmlFor="pc-7">
-                                    <input type="radio" id="pc-7" />
-                                </label>
-                                <label className="active black" htmlFor="pc-8">
-                                    <input type="radio" id="pc-8" />
-                                </label>
-                                <label className="grey" htmlFor="pc-9">
-                                    <input type="radio" id="pc-9" />
-                                </label>
                                 </div>
                             </div>
-                            </div>
-                        </div>
-                        <div className="col-lg-4 col-md-6 col-sm-6">
-                            <div className="product__item">
-                            <div className="product__item__pic set-bg" data-setbg="/assets/img/product/product-4.jpg">
-                                <ul className="product__hover">
-                                <li><a href="#"><img src="/assets/img/icon/heart.png" alt="" /></a></li>
-                                <li><a href="#"><img src="/assets/img/icon/compare.png" alt="" /> <span>Compare</span></a>
-                                </li>
-                                <li><a href="#"><img src="/assets/img/icon/search.png" alt="" /></a></li>
-                                </ul>
-                            </div>
-                            <div className="product__item__text">
-                                <h6>Diagonal Textured Cap</h6>
-                                <a href="#" className="add-cart">+ Add To Cart</a>
-                                <div className="rating">
-                                <i className="fa fa-star-o" />
-                                <i className="fa fa-star-o" />
-                                <i className="fa fa-star-o" />
-                                <i className="fa fa-star-o" />
-                                <i className="fa fa-star-o" />
-                                </div>
-                                <h5>$60.9</h5>
-                                <div className="product__color__select">
-                                <label htmlFor="pc-10">
-                                    <input type="radio" id="pc-10" />
-                                </label>
-                                <label className="active black" htmlFor="pc-11">
-                                    <input type="radio" id="pc-11" />
-                                </label>
-                                <label className="grey" htmlFor="pc-12">
-                                    <input type="radio" id="pc-12" />
-                                </label>
-                                </div>
-                            </div>
-                            </div>
-                        </div>
-                        <div className="col-lg-4 col-md-6 col-sm-6">
-                            <div className="product__item sale">
-                            <div className="product__item__pic set-bg" data-setbg="/assets/img/product/product-6.jpg">
-                                <span className="label">Sale</span>
-                                <ul className="product__hover">
-                                <li><a href="#"><img src="/assets/img/icon/heart.png" alt="" /></a></li>
-                                <li><a href="#"><img src="/assets/img/icon/compare.png" alt="" /> <span>Compare</span></a>
-                                </li>
-                                <li><a href="#"><img src="/assets/img/icon/search.png" alt="" /></a></li>
-                                </ul>
-                            </div>
-                            <div className="product__item__text">
-                                <h6>Ankle Boots</h6>
-                                <a href="#" className="add-cart">+ Add To Cart</a>
-                                <div className="rating">
-                                <i className="fa fa-star" />
-                                <i className="fa fa-star" />
-                                <i className="fa fa-star" />
-                                <i className="fa fa-star" />
-                                <i className="fa fa-star-o" />
-                                </div>
-                                <h5>$98.49</h5>
-                                <div className="product__color__select">
-                                <label htmlFor="pc-16">
-                                    <input type="radio" id="pc-16" />
-                                </label>
-                                <label className="active black" htmlFor="pc-17">
-                                    <input type="radio" id="pc-17" />
-                                </label>
-                                <label className="grey" htmlFor="pc-18">
-                                    <input type="radio" id="pc-18" />
-                                </label>
-                                </div>
-                            </div>
-                            </div>
-                        </div>
-                        <div className="col-lg-4 col-md-6 col-sm-6">
-                            <div className="product__item">
-                            <div className="product__item__pic set-bg" data-setbg="/assets/img/product/product-7.jpg">
-                                <ul className="product__hover">
-                                <li><a href="#"><img src="img/icon/heart.png" alt="" /></a></li>
-                                <li><a href="#"><img src="img/icon/compare.png" alt="" /> <span>Compare</span></a>
-                                </li>
-                                <li><a href="#"><img src="img/icon/search.png" alt="" /></a></li>
-                                </ul>
-                            </div>
-                            <div className="product__item__text">
-                                <h6>T-shirt Contrast Pocket</h6>
-                                <a href="#" className="add-cart">+ Add To Cart</a>
-                                <div className="rating">
-                                <i className="fa fa-star-o" />
-                                <i className="fa fa-star-o" />
-                                <i className="fa fa-star-o" />
-                                <i className="fa fa-star-o" />
-                                <i className="fa fa-star-o" />
-                                </div>
-                                <h5>$49.66</h5>
-                                <div className="product__color__select">
-                                <label htmlFor="pc-19">
-                                    <input type="radio" id="pc-19" />
-                                </label>
-                                <label className="active black" htmlFor="pc-20">
-                                    <input type="radio" id="pc-20" />
-                                </label>
-                                <label className="grey" htmlFor="pc-21">
-                                    <input type="radio" id="pc-21" />
-                                </label>
-                                </div>
-                            </div>
-                            </div>
-                        </div>
-                        <div className="col-lg-4 col-md-6 col-sm-6">
-                            <div className="product__item">
-                            <div className="product__item__pic set-bg" data-setbg="img/product/product-8.jpg">
-                                <ul className="product__hover">
-                                <li><a href="#"><img src="img/icon/heart.png" alt="" /></a></li>
-                                <li><a href="#"><img src="img/icon/compare.png" alt="" /> <span>Compare</span></a>
-                                </li>
-                                <li><a href="#"><img src="img/icon/search.png" alt="" /></a></li>
-                                </ul>
-                            </div>
-                            <div className="product__item__text">
-                                <h6>Basic Flowing Scarf</h6>
-                                <a href="#" className="add-cart">+ Add To Cart</a>
-                                <div className="rating">
-                                <i className="fa fa-star-o" />
-                                <i className="fa fa-star-o" />
-                                <i className="fa fa-star-o" />
-                                <i className="fa fa-star-o" />
-                                <i className="fa fa-star-o" />
-                                </div>
-                                <h5>$26.28</h5>
-                                <div className="product__color__select">
-                                <label htmlFor="pc-22">
-                                    <input type="radio" id="pc-22" />
-                                </label>
-                                <label className="active black" htmlFor="pc-23">
-                                    <input type="radio" id="pc-23" />
-                                </label>
-                                <label className="grey" htmlFor="pc-24">
-                                    <input type="radio" id="pc-24" />
-                                </label>
-                                </div>
-                            </div>
-                            </div>
-                        </div>
-                        <div className="col-lg-4 col-md-6 col-sm-6">
-                            <div className="product__item">
-                            <div className="product__item__pic set-bg" data-setbg="img/product/product-9.jpg">
-                                <ul className="product__hover">
-                                <li><a href="#"><img src="img/icon/heart.png" alt="" /></a></li>
-                                <li><a href="#"><img src="img/icon/compare.png" alt="" /> <span>Compare</span></a>
-                                </li>
-                                <li><a href="#"><img src="img/icon/search.png" alt="" /></a></li>
-                                </ul>
-                            </div>
-                            <div className="product__item__text">
-                                <h6>Piqué Biker Jacket</h6>
-                                <a href="#" className="add-cart">+ Add To Cart</a>
-                                <div className="rating">
-                                <i className="fa fa-star-o" />
-                                <i className="fa fa-star-o" />
-                                <i className="fa fa-star-o" />
-                                <i className="fa fa-star-o" />
-                                <i className="fa fa-star-o" />
-                                </div>
-                                <h5>$67.24</h5>
-                                <div className="product__color__select">
-                                <label htmlFor="pc-25">
-                                    <input type="radio" id="pc-25" />
-                                </label>
-                                <label className="active black" htmlFor="pc-26">
-                                    <input type="radio" id="pc-26" />
-                                </label>
-                                <label className="grey" htmlFor="pc-27">
-                                    <input type="radio" id="pc-27" />
-                                </label>
-                                </div>
-                            </div>
-                            </div>
-                        </div>
-                        <div className="col-lg-4 col-md-6 col-sm-6">
-                            <div className="product__item sale">
-                            <div className="product__item__pic set-bg" data-setbg="img/product/product-10.jpg">
-                                <span className="label">Sale</span>
-                                <ul className="product__hover">
-                                <li><a href="#"><img src="img/icon/heart.png" alt="" /></a></li>
-                                <li><a href="#"><img src="img/icon/compare.png" alt="" /> <span>Compare</span></a>
-                                </li>
-                                <li><a href="#"><img src="img/icon/search.png" alt="" /></a></li>
-                                </ul>
-                            </div>
-                            <div className="product__item__text">
-                                <h6>Multi-pocket Chest Bag</h6>
-                                <a href="#" className="add-cart">+ Add To Cart</a>
-                                <div className="rating">
-                                <i className="fa fa-star" />
-                                <i className="fa fa-star" />
-                                <i className="fa fa-star" />
-                                <i className="fa fa-star" />
-                                <i className="fa fa-star-o" />
-                                </div>
-                                <h5>$43.48</h5>
-                                <div className="product__color__select">
-                                <label htmlFor="pc-28">
-                                    <input type="radio" id="pc-28" />
-                                </label>
-                                <label className="active black" htmlFor="pc-29">
-                                    <input type="radio" id="pc-29" />
-                                </label>
-                                <label className="grey" htmlFor="pc-30">
-                                    <input type="radio" id="pc-30" />
-                                </label>
-                                </div>
-                            </div>
-                            </div>
-                        </div>
-                        <div className="col-lg-4 col-md-6 col-sm-6">
-                            <div className="product__item">
-                            <div className="product__item__pic set-bg" data-setbg="img/product/product-11.jpg">
-                                <ul className="product__hover">
-                                <li><a href="#"><img src="img/icon/heart.png" alt="" /></a></li>
-                                <li><a href="#"><img src="img/icon/compare.png" alt="" /> <span>Compare</span></a>
-                                </li>
-                                <li><a href="#"><img src="img/icon/search.png" alt="" /></a></li>
-                                </ul>
-                            </div>
-                            <div className="product__item__text">
-                                <h6>Diagonal Textured Cap</h6>
-                                <a href="#" className="add-cart">+ Add To Cart</a>
-                                <div className="rating">
-                                <i className="fa fa-star-o" />
-                                <i className="fa fa-star-o" />
-                                <i className="fa fa-star-o" />
-                                <i className="fa fa-star-o" />
-                                <i className="fa fa-star-o" />
-                                </div>
-                                <h5>$60.9</h5>
-                                <div className="product__color__select">
-                                <label htmlFor="pc-31">
-                                    <input type="radio" id="pc-31" />
-                                </label>
-                                <label className="active black" htmlFor="pc-32">
-                                    <input type="radio" id="pc-32" />
-                                </label>
-                                <label className="grey" htmlFor="pc-33">
-                                    <input type="radio" id="pc-33" />
-                                </label>
-                                </div>
-                            </div>
-                            </div>
-                        </div>
-                        <div className="col-lg-4 col-md-6 col-sm-6">
-                            <div className="product__item sale">
-                            <div className="product__item__pic set-bg" data-setbg="img/product/product-12.jpg">
-                                <span className="label">Sale</span>
-                                <ul className="product__hover">
-                                <li><a href="#"><img src="img/icon/heart.png" alt="" /></a></li>
-                                <li><a href="#"><img src="img/icon/compare.png" alt="" /> <span>Compare</span></a>
-                                </li>
-                                <li><a href="#"><img src="img/icon/search.png" alt="" /></a></li>
-                                </ul>
-                            </div>
-                            <div className="product__item__text">
-                                <h6>Ankle Boots</h6>
-                                <a href="#" className="add-cart">+ Add To Cart</a>
-                                <div className="rating">
-                                <i className="fa fa-star" />
-                                <i className="fa fa-star" />
-                                <i className="fa fa-star" />
-                                <i className="fa fa-star" />
-                                <i className="fa fa-star-o" />
-                                </div>
-                                <h5>$98.49</h5>
-                                <div className="product__color__select">
-                                <label htmlFor="pc-34">
-                                    <input type="radio" id="pc-34" />
-                                </label>
-                                <label className="active black" htmlFor="pc-35">
-                                    <input type="radio" id="pc-35" />
-                                </label>
-                                <label className="grey" htmlFor="pc-36">
-                                    <input type="radio" id="pc-36" />
-                                </label>
-                                </div>
-                            </div>
-                            </div>
-                        </div>
-                        <div className="col-lg-4 col-md-6 col-sm-6">
-                            <div className="product__item">
-                            <div className="product__item__pic set-bg" data-setbg="img/product/product-13.jpg">
-                                <ul className="product__hover">
-                                <li><a href="#"><img src="img/icon/heart.png" alt="" /></a></li>
-                                <li><a href="#"><img src="img/icon/compare.png" alt="" /> <span>Compare</span></a>
-                                </li>
-                                <li><a href="#"><img src="img/icon/search.png" alt="" /></a></li>
-                                </ul>
-                            </div>
-                            <div className="product__item__text">
-                                <h6>T-shirt Contrast Pocket</h6>
-                                <a href="#" className="add-cart">+ Add To Cart</a>
-                                <div className="rating">
-                                <i className="fa fa-star-o" />
-                                <i className="fa fa-star-o" />
-                                <i className="fa fa-star-o" />
-                                <i className="fa fa-star-o" />
-                                <i className="fa fa-star-o" />
-                                </div>
-                                <h5>$49.66</h5>
-                                <div className="product__color__select">
-                                <label htmlFor="pc-37">
-                                    <input type="radio" id="pc-37" />
-                                </label>
-                                <label className="active black" htmlFor="pc-38">
-                                    <input type="radio" id="pc-38" />
-                                </label>
-                                <label className="grey" htmlFor="pc-39">
-                                    <input type="radio" id="pc-39" />
-                                </label>
-                                </div>
-                            </div>
-                            </div>
-                        </div>
-                        <div className="col-lg-4 col-md-6 col-sm-6">
-                            <div className="product__item">
-                            <div className="product__item__pic set-bg" data-setbg="img/product/product-14.jpg">
-                                <ul className="product__hover">
-                                <li><a href="#"><img src="img/icon/heart.png" alt="" /></a></li>
-                                <li><a href="#"><img src="img/icon/compare.png" alt="" /> <span>Compare</span></a>
-                                </li>
-                                <li><a href="#"><img src="img/icon/search.png" alt="" /></a></li>
-                                </ul>
-                            </div>
-                            <div className="product__item__text">
-                                <h6>Basic Flowing Scarf</h6>
-                                <a href="#" className="add-cart">+ Add To Cart</a>
-                                <div className="rating">
-                                <i className="fa fa-star-o" />
-                                <i className="fa fa-star-o" />
-                                <i className="fa fa-star-o" />
-                                <i className="fa fa-star-o" />
-                                <i className="fa fa-star-o" />
-                                </div>
-                                <h5>$26.28</h5>
-                                <div className="product__color__select">
-                                <label htmlFor="pc-40">
-                                    <input type="radio" id="pc-40" />
-                                </label>
-                                <label className="active black" htmlFor="pc-41">
-                                    <input type="radio" id="pc-41" />
-                                </label>
-                                <label className="grey" htmlFor="pc-42">
-                                    <input type="radio" id="pc-42" />
-                                </label>
-                                </div>
-                            </div>
-                            </div>
-                        </div>
+                            );
+                           
+                        })}
+                       
+                        
                         </div>
                         <div className="row">
                         <div className="col-lg-12">

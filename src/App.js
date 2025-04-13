@@ -8,6 +8,8 @@ import CategoryLayout from './Pages/Admin/CategoryLayout';
 import CreateCategory from './Pages/Admin/CreateCategory';
 import EditCategory from './Pages/Admin/EditCategory';
 import AllCategories from './Pages/Admin/AllCategory';
+import ProductLayout from './Pages/Admin/ProductLayout';
+import CreateProduct from './Pages/Admin/CreateProduct';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import React, { useEffect } from "react";
 // Import jQuery if using it (since React doesn't include it by default)
@@ -33,6 +35,11 @@ const App = () => {
                <Route index element={<AllCategories />} />
                <Route path="create" element={<CreateCategory/>} />
                <Route path="edit/:slug" element={<EditCategory/>} />
+              </Route>
+              <Route path="product" elemnt={<ProductLayout />}>
+               {/* <Route index element={<AllProducts />} /> */}
+               <Route path="create" element={<CreateProduct/>} />
+               {/* <Route path="edit/:slug" element={<EditCategory/>} /> */}
               </Route>
               {/* <Route path="categories/all" element={<Categories />} /> */}
               

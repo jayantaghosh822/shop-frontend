@@ -139,7 +139,7 @@ const AdminSidebar = ()=>{
                     </g>
                   </svg>
                 </div>
-                <span className="nav-link-text ms-1">Virtual Reality</span>
+                <span className="nav-link-text ms-1">Attributes</span>
               </a>
             </li>
             <li className="nav-item">
