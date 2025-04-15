@@ -97,7 +97,7 @@ a:hover,
 a:focus {
 	text-decoration: none;
 	outline: none;
-	color: #ffffff;
+	/* color: #ffffff; */
 }
 
 ul,
@@ -1250,18 +1250,24 @@ ol {
 .shop__sidebar__categories ul li a,
 .shop__sidebar__price ul li a,
 .shop__sidebar__brand ul li a {
-	color: #b7b7b7;
+	/* color: #b7b7b7; */
 	font-size: 15px;
 	line-height: 32px;
 	-webkit-transition: all, 0.3s;
 	-o-transition: all, 0.3s;
 	transition: all, 0.3s;
 }
+.brandnotselected{
+	color: black;
+}
+.brandselected{
+	color: #811818;
 
+}
 .shop__sidebar__categories ul li a:hover,
 .shop__sidebar__price ul li a:hover,
 .shop__sidebar__brand ul li a:hover {
-	color: #111111;
+	color: #811818;
 }
 
 .shop__sidebar__brand ul {
@@ -3849,3 +3855,15 @@ ol {
 		height: 250px;
 	}
 }
+
+
+.size-label {
+	border: 1px solid transparent;
+	padding: 8px 12px;
+	cursor: pointer;
+	display: inline-block;
+  }
+  
+  .size-label:has(input:checked) {
+	border: 2px solid black;
+  }

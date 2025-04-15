@@ -200,10 +200,7 @@ padding:5px;
   display:flex;
   right:0px;
 }
-.google-btn{
-  /* display: flex; */
-  /* align-items: center; */
-}
+
 .login-with-google-btn {
   transition: background-color .3s, box-shadow .3s;
   width: 100%;
@@ -264,3 +261,4 @@ padding:5px;
 .white-box { background-color: white; }
 .yellow-box { background-color: yellow; }
 .pink-box { background-color: pink; }
+

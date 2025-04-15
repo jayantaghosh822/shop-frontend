@@ -12,10 +12,22 @@ const Store = ({ children }) =>{
     useScript([
         "/assets/js/main.js",
     ]);
+
+    //set products and filterLists
     const [catProducts,setCatProducts] = useState([]);
     const [productBrands,setBrands] = useState([]);
-    const [productColors,setColors] = useState([]);
     const [productPrices,setPrices] = useState([]);
+    const [productSizes,setSizes] = useState([]);
+    const [productColors,setColors] = useState([]);
+    //set products and filterLists
+
+    //filtering products
+    const [filterBrands,setfilterBrands] = useState([]);
+    const [filterPrices,setfilterPrices] = useState([]);
+    const [filterSizes,setfilterSizes] = useState([]);
+    const [filterColors,setfilterColors] = useState([]);
+    //filtering products
+
     const { category, subcategory } = useParams();
     // alert(category);
     // alert(subcategory);
@@ -24,20 +36,23 @@ const Store = ({ children }) =>{
             const backendUrl = process.env.REACT_APP_BACKEND_URL;
           try {
             const response = await axios.get(`${backendUrl}/api/product-by-category`, {
-              params: {
-                category: subcategory,
-              }
+                withCredentials: true,
+                params: {
+                  category: subcategory,
+                }
             });
             setCatProducts(response.data.products);
-            let priceArray = [];
+            let priceArray= [];
+            let sizeArray = [];
             response.data.products.forEach(pro => {
                 const size = pro.size;
                 const prices = size.map(eachSize => eachSize.price);
-                // console.log(prices);
+                sizeArray[sizeArray.length] = size;
+               
+
                 const min = Math.min(...prices);
                 const max = Math.max(...prices);
-                console.log(min);
-                console.log(max);
+              
                 if(!(priceArray.includes(min))){
                     priceArray[priceArray.length] = min;
                 }
@@ -48,9 +63,23 @@ const Store = ({ children }) =>{
             });
            
             setPrices(priceArray);
+            let sizes = [];
+            if(sizeArray.length>0){
+             
+                sizeArray.forEach(prosizes => {
+                    prosizes.forEach(size => {
+                        if(!sizes.includes(size.size)){
+                            sizes[sizes.length] = size.size
+                        }
+                    })
+                });
+                setSizes(sizes);
+               
+            }
+           
             setBrands(response.data.brands);
             setColors(response.data.colors);
-            console.log(response);
+           
           } catch (err) {
             console.error(err);
           }
@@ -58,6 +87,116 @@ const Store = ({ children }) =>{
       
         fetchProductByCat();
     }, []);
+
+    
+    const toggleBrand = (brandId)=> {
+        alert(brandId);
+        setfilterBrands(prev => {
+          const isSelected = prev.some(b => b === brandId);
+          if (isSelected) {
+            return prev.filter(b => b !== brandId);
+          } else {
+            return [...prev, brandId];
+          }
+        });
+    };
+
+    const renderPriceHtml = () => {
+        if (!productPrices || productPrices.length === 0) return null;
+      
+        const min = Math.min(...productPrices);
+        const max = Math.max(...productPrices);
+        const step2 = 100;
+        let current = Math.floor(min / step2) * step2; // Round down to nearest hundred
+        let priceRanges = [];
+
+        while (current < max) {
+        const next = current + step2;
+        priceRanges.push(`${current}-${next}`);
+        current = next;
+        }
+        let priceFilterList = [];
+        priceRanges.forEach(price => {
+            priceFilterList.push(
+                <li key={price}  onClick={(e) => {
+                    e.preventDefault();
+                    togglePrices(price);
+                    }}>
+                  <a href="#" className={filterPrices.some(p => p === price) ? "brandselected" : "brandnotselected"} >${price}</a>
+                </li>
+            );
+        });
+
+        return priceFilterList;
+    };
+
+    const togglePrices = (price) => {
+     
+        setfilterPrices(prev => {
+          const isSelected = prev.some(p => p === price);
+          if (isSelected) {
+            return prev.filter(p => p !== price);
+          } else {
+            return [...prev, price];
+          }
+        });
+    };
+
+
+    const renderSizeHtml = () => {
+        if (!productSizes || productSizes.length === 0) return null;
+      
+       
+        let sizeArray = [];
+        let sizeFilterList = [];
+     
+            productSizes.forEach(size => {
+               
+                  
+                    sizeFilterList.push(
+                        <label htmlFor="" className={filterSizes.some(s => s === size) ? "active" : ""} key={size} onClick={(e) => {
+                            e.preventDefault();
+                            toggleSizes(size);
+                            }}
+                        >{size} 
+                            <input type="radio" id="xs" />
+                        </label>
+                    );
+             
+               
+            });
+            
+
+        return sizeFilterList;
+        // You can generate multiple ranges dynamically if you want
+        
+    };
+      
+    const toggleSizes = (size) => {
+       
+
+        setfilterSizes(prev => {
+          const isSelected = prev.some(s => s === size);
+          if (isSelected) {
+            return prev.filter(s => s !== size);
+          } else {
+            return [...prev, size];
+          }
+        });
+    };
+
+    const toggleColors = (color) => {
+    
+
+        setfilterColors(prev => {
+          const isSelected = prev.some(c => c === color);
+          if (isSelected) {
+            return prev.filter(c => c !== color);
+          } else {
+            return [...prev, color];
+          }
+        });
+    };
 
     const getPrice = (size) => {
         if (!Array.isArray(size) || size.length === 0) return "N/A";
@@ -69,6 +208,15 @@ const Store = ({ children }) =>{
         
         return `${min}-${max}`;
     };
+
+
+    useEffect(()=>{
+        console.log('brands',filterBrands);
+        console.log('prices',filterPrices);
+        console.log('SIZERS',filterSizes);
+        console.log('colors',filterColors);
+    },[filterBrands,filterPrices,filterSizes,filterColors])
+
     return(
         <>
          <Layout>
@@ -115,9 +263,21 @@ const Store = ({ children }) =>{
                                 <div className="card-body">
                                     <div className="shop__sidebar__brand">
                                     <ul>
+                                        
                                         {productBrands.map((brand)=>{
                                             return(
-                                                <li><a href="#">{brand.name}</a></li>
+                                                <li key={brand._id}>
+                                                    <a
+                                                        href="#"
+                                                        className={filterBrands.some(b => b === brand._id) ? "brandselected" : "brandnotselected"}
+                                                        onClick={(e) => {
+                                                        e.preventDefault();
+                                                        toggleBrand(brand._id);
+                                                        }}
+                                                    >
+                                                        {brand.name}
+                                                    </a>
+                                                </li>
                                             );
                                            
                                         })}
@@ -135,50 +295,23 @@ const Store = ({ children }) =>{
                                 <div id="collapseThree" className="collapse show" data-parent="#accordionExample">
                                 <div className="card-body">
                                     <div className="shop__sidebar__price">
-                                        {console.log(productPrices)}
+                                      
                                     <ul>
-                                        <li><a href="#">$0.00 - $50.00</a></li>
-                                        <li><a href="#">$50.00 - $100.00</a></li>
-                                        <li><a href="#">$100.00 - $150.00</a></li>
-                                        <li><a href="#">$150.00 - $200.00</a></li>
-                                        <li><a href="#">$200.00 - $250.00</a></li>
-                                        <li><a href="#">250.00+</a></li>
+                                        {renderPriceHtml()}
                                     </ul>
                                     </div>
                                 </div>
                                 </div>
                             </div>
                             <div className="card">
+                                
                                 <div className="card-heading">
                                 <a data-toggle="collapse" data-target="#collapseFour">Size</a>
                                 </div>
                                 <div id="collapseFour" className="collapse show" data-parent="#accordionExample">
                                 <div className="card-body">
                                     <div className="shop__sidebar__size">
-                                    <label htmlFor="xs">xs
-                                        <input type="radio" id="xs" />
-                                    </label>
-                                    <label htmlFor="sm">s
-                                        <input type="radio" id="sm" />
-                                    </label>
-                                    <label htmlFor="md">m
-                                        <input type="radio" id="md" />
-                                    </label>
-                                    <label htmlFor="xl">xl
-                                        <input type="radio" id="xl" />
-                                    </label>
-                                    <label htmlFor="2xl">2xl
-                                        <input type="radio" id="2xl" />
-                                    </label>
-                                    <label htmlFor="xxl">xxl
-                                        <input type="radio" id="xxl" />
-                                    </label>
-                                    <label htmlFor="3xl">3xl
-                                        <input type="radio" id="3xl" />
-                                    </label>
-                                    <label htmlFor="4xl">4xl
-                                        <input type="radio" id="4xl" />
-                                    </label>
+                                    {renderSizeHtml()}
                                     </div>
                                 </div>
                                 </div>
@@ -192,8 +325,11 @@ const Store = ({ children }) =>{
                                     <div className="shop__sidebar__size">
                                         {productColors.map((color)=>{
                                             return(
-                                                <label htmlFor="xs" className="box-color">{color.name}
-                                                    <input type="radio" id="xs" />
+                                                <label htmlFor="" key={color._id} className={filterColors.some(c=>color._id==c)?'box-color active':'box-color'}  onClick={(e) => {
+                                                    e.preventDefault();
+                                                    toggleColors(color._id);
+                                                    }} >{color.name}
+                                                    <input type="radio" id="" />
                                                 </label>
                                             );
                                         })}
@@ -246,7 +382,7 @@ const Store = ({ children }) =>{
                         </div>
                         </div>
                         <div className="row">
-                        {console.log(catProducts)}
+                       
                         { catProducts.map((elem)=>{
                             return(
                             <div key={elem._id} className="col-lg-4 col-md-6 col-sm-6">
