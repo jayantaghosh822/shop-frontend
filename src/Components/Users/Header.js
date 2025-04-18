@@ -9,6 +9,7 @@ import { useSelector } from "react-redux";
 import { Outlet, Link } from "react-router-dom";
 import { GoogleLogin } from '@react-oauth/google';
 import { googleLogout, useGoogleLogin } from '@react-oauth/google';
+import { validatePassword } from '../../Utils/ValiadatePass';
 
 // import "react-toastify/dist/ReactToastify.css";
 // import {NotificationContainer, NotificationManager} from 'react-notifications';
@@ -56,7 +57,32 @@ const Header = () => {
             ...RegisterformData,
             [name]:value
         });
+        // alert(name);
+        if(name == 'userPassword'){
+            if(!validatePassword(value)){
+                    setShowValidationError(true);
+            }else{
+                setShowValidationError(false);
+            }
+        }
+        
     }
+    const [showValidationError , setShowValidationError] = useState(false);
+    const validationError = () => {
+        return (
+            showValidationError?
+            <div style={{ color: 'red' }}>
+              Password does not meet the requirements. Please include at least 8 characters,
+              with at least one uppercase letter, one lowercase letter, one number, and one special character.
+            </div>:
+            <div>
+                Your password must include at least 8 characters,
+                with at least one uppercase letter, one lowercase letter, one number, and one special character.
+            </div>
+          
+        );
+    };
+
     const [RegisterformData, setRegisterFormData] = useState({
         userFirstName: '',
         userLastName: '',
@@ -295,6 +321,7 @@ const Header = () => {
                     <input name="userEmail" value={RegisterformData.userEmail} onChange={handleRegisterFormChange} type="email" />
                 <label>Your Password</label>
                     <input name="userPassword" value={RegisterformData.userPassword} onChange={handleRegisterFormChange} type="password" />
+                {validationError()}
                 <input type="submit" className="primary-btn" value="Register" />
                 <div class="google-btn">
                 {
@@ -317,7 +344,7 @@ const Header = () => {
                     <input name="userEmail" value={LoginformData.userEmail} onChange={handleLoginFormChange} type="email" />
                 <label>Your Password</label>
                     <input name="userPassword" value={LoginformData.userPassword} onChange={handleLoginFormChange} type="password" />
-                <Link to="/reset-password">forgot password?</Link>
+                <Link to="/password-reset">forgot password?</Link>
                
                 <input type="submit" className="primary-btn" value="Login" />
             </form>
