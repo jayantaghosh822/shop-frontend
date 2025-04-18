@@ -8,7 +8,7 @@ import Layout from "../../Layouts/User/Layout";
 import { useParams } from "react-router-dom";
 // import { useDispatch } from "react-redux";
 // import { loginSuccess } from "../redux/authSlice";
-const Store = ({ children }) =>{
+const Store = () =>{
     useScript([
         "/assets/js/main.js",
     ]);

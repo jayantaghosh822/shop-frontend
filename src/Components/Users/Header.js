@@ -187,7 +187,7 @@ const Header = () => {
                 setdisplayNamestate(false);
                 // sessionStorage.setItem('user',JSON.stringify(userLogin.data.user));
                 // console.log();
-                document.cookie = `user_token=${encodeURIComponent(JSON.stringify(userLogin.data.user.token))}; path=/;`;
+                // document.cookie = `user_token=${encodeURIComponent(JSON.stringify(userLogin.data.user.token))}; path=/;`;
                 // document.cookie = `user_name=${encodeURIComponent(JSON.stringify(userLogin.data.user.token))}; path=/;`;
                 showloginForm(prevState => !prevState); // Toggle between true/false
                 setdisplayRegister(true);
@@ -230,18 +230,41 @@ const Header = () => {
                     })
                     .then(async(res) => {
                         const backendUrl = process.env.REACT_APP_BACKEND_URL;
-                        console.log(res.data);
+                        // console.log(res.data);
                         let userDetails = {
                             'displayname':res.data.email,
                             'email':res.data.email,
                             'firstname':res.data.given_name,
                             'lastname':res.data.family_name,
                         }
+                        try{
                         const userLoginByGoogle = await axios.post(backendUrl+'/api/user/auth-google', userDetails , { withCredentials: true });
-                        console.log(userLoginByGoogle);
-                        showregisterForm(prevState => !prevState);
+                        // console.log(userLoginByGoogle.data.user);
+                        // showregisterForm(prevState => !prevState);
                         showloginForm(prevState => !prevState);
-                        // setProfile(res.data);
+                       
+                        dispatch(loginSuccess({ user: userLoginByGoogle.data.user }));
+                        toast.success(userLoginByGoogle.data.message, {
+                            position: "top-right",
+                            autoClose: 3000,
+                            hideProgressBar: false,
+                            closeOnClick: true,
+                            pauseOnHover: true,
+                            draggable: true,
+                            progress: undefined,
+                        });
+                        }catch(err){
+                            toast.error(err.response.data.error, {
+                                position: "top-right",
+                                autoClose: 3000,
+                                hideProgressBar: false,
+                                closeOnClick: true,
+                                pauseOnHover: true,
+                                draggable: true,
+                                progress: undefined,
+                            });
+                        }
+                        
                     })
                     .catch((err) => console.log(err));
             }
@@ -277,9 +300,9 @@ const Header = () => {
                 {
                     <>
                     {/* <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIj48cGF0aCBkPSJNMTcuNiA5LjJsLS4xLTEuOEg5djMuNGg0LjhDMTMuNiAxMiAxMyAxMyAxMiAxMy42djIuMmgzYTguOCA4LjggMCAwIDAgMi42LTYuNnoiIGZpbGw9IiM0Mjg1RjQiIGZpbGwtcnVsZT0ibm9uemVybyIvPjxwYXRoIGQ9Ik05IDE4YzIuNCAwIDQuNS0uOCA2LTIuMmwtMy0yLjJhNS40IDUuNCAwIDAgMS04LTIuOUgxVjEzYTkgOSAwIDAgMCA4IDV6IiBmaWxsPSIjMzRBODUzIiBmaWxsLXJ1bGU9Im5vbnplcm8iLz48cGF0aCBkPSJNNCAxMC43YTUuNCA1LjQgMCAwIDEgMC0zLjRWNUgxYTkgOSAwIDAgMCAwIDhsMy0yLjN6IiBmaWxsPSIjRkJCQzA1IiBmaWxsLXJ1bGU9Im5vbnplcm8iLz48cGF0aCBkPSJNOSAzLjZjMS4zIDAgMi41LjQgMy40IDEuM0wxNSAyLjNBOSA5IDAgMCAwIDEgNWwzIDIuNGE1LjQgNS40IDAgMCAxIDUtMy43eiIgZmlsbD0iI0VBNDMzNSIgZmlsbC1ydWxlPSJub256ZXJvIi8+PHBhdGggZD0iTTAgMGgxOHYxOEgweiIvPjwvZz48L3N2Zz4="></img> */}
-                <button type="button" class="login-with-google-btn" onClick={login}>
+                {/* <button type="button" class="login-with-google-btn" onClick={login}>
                     Sign in with Google
-                </button>
+                </button> */}
                     </>
                 
                 }
@@ -294,6 +317,8 @@ const Header = () => {
                     <input name="userEmail" value={LoginformData.userEmail} onChange={handleLoginFormChange} type="email" />
                 <label>Your Password</label>
                     <input name="userPassword" value={LoginformData.userPassword} onChange={handleLoginFormChange} type="password" />
+                <Link to="/reset-password">forgot password?</Link>
+               
                 <input type="submit" className="primary-btn" value="Login" />
             </form>
             <div class="google-btn">
@@ -359,10 +384,17 @@ const Header = () => {
                 <div className="header__top__right">
                     <div className="header__top__links">
                     <a href="#" >{authuser?(authuser.name):''}</a>
-                    <a href="#" onClick={RegisterFormToggle} hidden={displayRegisterButton}>Sign up</a>
-                    <a href="#" onClick={LoginFormToggle}  hidden={displayLoginButton}>Sign in</a>
+                    {
+                    !authuser && (
+                        <>
+                        <a href="#" onClick={RegisterFormToggle} hidden={displayRegisterButton}>Sign up</a>
+                        <a href="#" onClick={LoginFormToggle} hidden={displayLoginButton}>Sign in</a>
+                        </>
+                    )
+                    }
+                    
                     <Link to="/admin">Admin Area</Link>
-                    <a href="#" hidden={displaynameState}>{user.displayName}</a>
+                    {/* <a href="#" hidden={displaynameState}>{user.displayName}</a> */}
                     <a href="#">FAQs</a>
                     </div>
                     <div className="header__top__hover">

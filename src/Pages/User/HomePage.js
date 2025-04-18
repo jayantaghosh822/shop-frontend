@@ -2,7 +2,7 @@ import React from 'react';
 import Layout from '../../Layouts/User/Layout';
 import { useEffect } from 'react';
 import useScript from "../../Hooks/jsLoader";
-const HomePage = ({ children }) => {
+const HomePage = () => {
   useScript([
      "/assets/js/main.js",
   ]);
