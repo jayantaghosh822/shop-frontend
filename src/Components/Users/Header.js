@@ -299,9 +299,16 @@ const Header = () => {
     );
 
     // log out function to log the user out of google and set the profile array to null
-    const logOut = () => {
+    const LogOut = () => {
         googleLogout();
-        setProfile(null);
+        const backendUrl = process.env.REACT_APP_BACKEND_URL;
+        axios.post(backendUrl+'/api/user/log-out', {} , { withCredentials: true })
+        .then(res=>{
+            alert("logging out ");
+            dispatch(logout());
+        })
+        
+        // setProfile(null);
     };
 
   return (
@@ -312,11 +319,11 @@ const Header = () => {
             <form onSubmit={Register}>
                 <button type="button" id="close-btn" onClick={RegisterFormToggle}>×</button>
                 <label>Your First Name</label>
-                    <input name="userFirstName" value={RegisterformData.userFirstName} onChange={handleRegisterFormChange} type="text" />
+                    <input name="userFirstName" onkeypress="return event.charCode != 32" value={RegisterformData.userFirstName} onChange={handleRegisterFormChange} type="text" />
                 <label>Your Last Name</label>
                     <input name="userLastName" value={RegisterformData.userLastName} onChange={handleRegisterFormChange} type="text" />
                 <label>Your Phone</label>
-                    <input name="userPhone" value={RegisterformData.userPhone} onChange={handleRegisterFormChange} type="text" />
+                    <input name="userPhone" maxlength="10" minlength="10" value={RegisterformData.userPhone} onChange={handleRegisterFormChange} type="text" />
                 <label>Your Email</label>
                     <input name="userEmail" value={RegisterformData.userEmail} onChange={handleRegisterFormChange} type="email" />
                 <label>Your Password</label>
@@ -374,7 +381,7 @@ const Header = () => {
             <a href="#" onClick={RegisterFormToggle}>{authuser?(authuser.name):'Sign up'}</a>
             <a href="#" onClick={LoginFormToggle}>Sign in</a>
             <a href="#" hidden={displaynameState}>{user.displayName}</a>
-            <a href="#">FAQs</a>
+            <a href="#">Logout</a>
             </div>
             <div className="offcanvas__top__hover">
             <span>Usd <i className="arrow_carrot-down" /></span>
@@ -422,15 +429,22 @@ const Header = () => {
                     
                     <Link to="/admin">Admin Area</Link>
                     {/* <a href="#" hidden={displaynameState}>{user.displayName}</a> */}
-                    <a href="#">FAQs</a>
+                    {
+                        authuser && (
+                            <>
+                                <a href="#" onClick={LogOut}>Logout</a>
+                            </>
+                        )
+                    }
+                    
                     </div>
                     <div className="header__top__hover">
-                    <span>Usd <i className="arrow_carrot-down" /></span>
+                    {/* <span>Usd <i className="arrow_carrot-down" /></span>
                     <ul>
                         <li>USD</li>
                         <li>EUR</li>
                         <li>USD</li>
-                    </ul>
+                    </ul> */}
                     </div>
                 </div>
                 </div>

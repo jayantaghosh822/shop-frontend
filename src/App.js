@@ -17,6 +17,7 @@ import { useDispatch } from "react-redux";
 import { loginSuccess,logout } from "./redux/authSlice";
 import React, { useEffect } from "react";
 import axios from 'axios';
+import RequireAuth from './Utils/RequireAuth';
 // Import jQuery if using it (since React doesn't include it by default)
 // import $ from "jquery";
 
@@ -29,7 +30,11 @@ const App = () => {
         const backendUrl = process.env.REACT_APP_BACKEND_URL;
         const userStatus = await axios.get(backendUrl+'/api/user/verify-user' , { withCredentials: true });
         if(userStatus.data.success){
-          dispatch(loginSuccess({ user: userStatus.data.user }));
+          // if(userStatus.data.user){
+            dispatch(loginSuccess({ user: userStatus.data.user }));
+          // }
+         
+          // dispatch(loginSuccess({ loading: false }));
         }
         
       }catch(err){
@@ -56,21 +61,39 @@ const App = () => {
           <Route path="/:category/:subcategory" element={<Store />} />
 
 
-            <Route path="/admin" element={<AdminDashboard />}>
+            {/* <Route path="/admin" element={<AdminDashboard />}>
               <Route index element={<AdminDashboardHome />} />
-              {/* <Route path="categories" element={<AllCategories />} /> */}
               <Route path="category" elemnt={<CategoryLayout />}>
                <Route index element={<AllCategories />} />
                <Route path="create" element={<CreateCategory/>} />
                <Route path="edit/:slug" element={<EditCategory/>} />
               </Route>
               <Route path="product" elemnt={<ProductLayout />}>
-               {/* <Route index element={<AllProducts />} /> */}
+             
                <Route path="create" element={<CreateProduct/>} />
-               {/* <Route path="edit/:slug" element={<EditCategory/>} /> */}
-              </Route>
-              {/* <Route path="categories/all" element={<Categories />} /> */}
               
+              </Route>
+              
+              
+            </Route> */}
+
+            <Route
+              path="/admin"
+              element={
+                <RequireAuth>
+                  <AdminDashboard />
+                </RequireAuth>
+              }
+            >
+                <Route index element={<AdminDashboardHome />} />
+                <Route path="category" element={<CategoryLayout />}>
+                  <Route index element={<AllCategories />} />
+                  <Route path="create" element={<CreateCategory />} />
+                  <Route path="edit/:slug" element={<EditCategory />} />
+                </Route>
+                <Route path="product" element={<ProductLayout />}>
+                  <Route path="create" element={<CreateProduct />} />
+                </Route>
             </Route>
 
 

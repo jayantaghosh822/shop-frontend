@@ -9,7 +9,8 @@ const getCookie = (name) => {
 
 const initialState = {
   user: null,
-  token: getCookie("authToken") || null, // Load token from cookie
+  loading: true,
+  token: getCookie("token") || null, // Load token from cookie
 };
 
 const authSlice = createSlice({
@@ -18,10 +19,12 @@ const authSlice = createSlice({
   reducers: {
     loginSuccess: (state, action) => {
       state.user = action.payload.user;
+      state.loading = false;
     },
     logout: (state) => {
+      // alert('loging out');
       state.user = null;
-      document.cookie = "authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+      state.loading = false;
     },
   },
 });
