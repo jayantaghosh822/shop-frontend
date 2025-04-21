@@ -211,10 +211,31 @@ const Store = () =>{
 
 
     useEffect(()=>{
-        console.log('brands',filterBrands);
-        console.log('prices',filterPrices);
-        console.log('SIZERS',filterSizes);
-        console.log('colors',filterColors);
+
+        const filterProducts= async()=>{
+            try{
+                console.log('brands',filterBrands);
+                console.log('prices',filterPrices);
+                console.log('SIZERS',filterSizes);
+                console.log('colors',filterColors);
+                const backendUrl = process.env.REACT_APP_BACKEND_URL;
+                const filterProducts = await axios.get(`${backendUrl}/api/filter-products/`, {
+                    params: {
+                      brands: filterBrands,
+                      prices: filterPrices,
+                      sizes: filterSizes,
+                      colors: filterColors,
+                    },
+                    withCredentials: true,
+                });
+            }catch(err){
+                console.log('brands',err);
+            }
+        }
+        
+        filterProducts();
+          
+
     },[filterBrands,filterPrices,filterSizes,filterColors])
 
     return(
