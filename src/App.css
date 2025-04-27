@@ -300,3 +300,18 @@ padding:5px;
   cursor: pointer;
   color: #555;
 }
+
+
+@media screen and (min-width: 1024px) {
+  .ktFyRS {
+      top: 50%;
+      left: 50%;
+      background: white;
+      padding: unset;
+      width: 50% !important;
+      border-radius: 8px !important;
+      transition: none !important;
+      height: fit-content !important;
+      transform: translate(-50%, -50%) !important;
+  }
+}

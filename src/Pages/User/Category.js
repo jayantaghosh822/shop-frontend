@@ -6,6 +6,7 @@ import "react-toastify/dist/ReactToastify.css";
 import useScript from "../../Hooks/jsLoader";
 import Layout from "../../Layouts/User/Layout";
 import { useParams } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom"; // if you're using react-router-dom v6
 // import { useDispatch } from "react-redux";
 // import { loginSuccess } from "../redux/authSlice";
 const Store = () =>{
@@ -19,6 +20,10 @@ const Store = () =>{
     const [productPrices,setPrices] = useState([]);
     const [productSizes,setSizes] = useState([]);
     const [productColors,setColors] = useState([]);
+    const [pageInfo , setPageInfo] = useState({});
+    let [currentPage , setCurrentPage] = useState(null);
+    const [filtersReady, setFiltersReady] = useState(false);
+    // const [totalPages , setTotalPages] = useState(0);
     //set products and filterLists
 
     //filtering products
@@ -29,68 +34,11 @@ const Store = () =>{
     //filtering products
 
     const { category, subcategory } = useParams();
-    // alert(category);
+
     // alert(subcategory);
-    useEffect(() => {
-        const fetchProductByCat = async () => {
-            const backendUrl = process.env.REACT_APP_BACKEND_URL;
-          try {
-            const response = await axios.get(`${backendUrl}/api/product-by-category`, {
-                withCredentials: true,
-                params: {
-                  category: subcategory,
-                }
-            });
-            setCatProducts(response.data.products);
-            let priceArray= [];
-            let sizeArray = [];
-            response.data.products.forEach(pro => {
-                const size = pro.size;
-                const prices = size.map(eachSize => eachSize.price);
-                sizeArray[sizeArray.length] = size;
-               
-
-                const min = Math.min(...prices);
-                const max = Math.max(...prices);
-              
-                if(!(priceArray.includes(min))){
-                    priceArray[priceArray.length] = min;
-                }
-                if(!(priceArray.includes(max))){
-                    priceArray[priceArray.length] = max;
-                }
-               
-            });
-           
-            setPrices(priceArray);
-            let sizes = [];
-            if(sizeArray.length>0){
-             
-                sizeArray.forEach(prosizes => {
-                    prosizes.forEach(size => {
-                        if(!sizes.includes(size.size)){
-                            sizes[sizes.length] = size.size
-                        }
-                    })
-                });
-                setSizes(sizes);
-               
-            }
-           
-            setBrands(response.data.brands);
-            setColors(response.data.colors);
-           
-          } catch (err) {
-            console.error(err);
-          }
-        };
-      
-        fetchProductByCat();
-    }, []);
-
     
     const toggleBrand = (brandId)=> {
-        alert(brandId);
+        // alert(brandId);
         setfilterBrands(prev => {
           const isSelected = prev.some(b => b === brandId);
           if (isSelected) {
@@ -106,7 +54,7 @@ const Store = () =>{
       
         const min = Math.min(...productPrices);
         const max = Math.max(...productPrices);
-        const step2 = 100;
+        const step2 = 500;
         let current = Math.floor(min / step2) * step2; // Round down to nearest hundred
         let priceRanges = [];
 
@@ -146,7 +94,7 @@ const Store = () =>{
     const renderSizeHtml = () => {
         if (!productSizes || productSizes.length === 0) return null;
       
-       
+       console.log(productSizes);
         let sizeArray = [];
         let sizeFilterList = [];
      
@@ -154,11 +102,11 @@ const Store = () =>{
                
                   
                     sizeFilterList.push(
-                        <label htmlFor="" className={filterSizes.some(s => s === size) ? "active" : ""} key={size} onClick={(e) => {
+                        <label htmlFor="" className={filterSizes.some(s => s === size.size) ? "active" : ""} key={size.size} onClick={(e) => {
                             e.preventDefault();
-                            toggleSizes(size);
+                            toggleSizes(size.size);
                             }}
-                        >{size} 
+                        >{size.size} 
                             <input type="radio" id="xs" />
                         </label>
                     );
@@ -209,25 +157,143 @@ const Store = () =>{
         return `${min}-${max}`;
     };
 
+    const renderPageNumbers = ()=>{
+        console.log(pageInfo);
+        let storeLinks = [];
+        for(let i=1 ; i<=pageInfo.totalPages ; i++){
+            storeLinks.push(
+                <a href="#" onClick={(e) => {
+                    e.preventDefault();
+                    setCurrentPage(i);
+                    pageChangefilterProducts(i);
+                    }}  className={i==pageInfo.currentPage?'active':''}>{i}</a>
+            );
+        }
+        if(storeLinks.length>5){
+            storeLinks.push(
+                <>
+                 <span>...</span>
+                 <a href="#">21</a>
+                </>
+               
+            );
+        }
+        console.log(storeLinks);
+        return(
+            <div className="col-lg-12">
+                <div className="product__pagination">
+                {storeLinks}
+               
+             
+                </div>
+            </div>
+        );
+        
+    }
+    const navigate = useNavigate();
+    const location = useLocation();
+    
+    //set filters states from url when reloadede
+    // useEffect(() => {
+    //     const searchParams = new URLSearchParams(location.search);
+    //     const brandsFromUrl = searchParams.get('brands')?.split(',') || [];
+    //     const colorsFromUrl = searchParams.get('colors')?.split(',') || [];
+    //     const sizesFromUrl = searchParams.get('sizes')?.split(',') || [];
+    //     const pricesFromUrl = searchParams.get('prices')?.split(',') || [];
+      
+    //     if (brandsFromUrl.length) setfilterBrands(brandsFromUrl);
+    //     if (colorsFromUrl.length) setfilterColors(colorsFromUrl);
+    //     if (sizesFromUrl.length) setfilterSizes(sizesFromUrl);
+    //     if (pricesFromUrl.length) setfilterPrices(pricesFromUrl);
+    //     setFiltersReady(true); // ✅ only after setting all
+    // }, []); // <-- empty dependency array! runs only once
+    
 
+    //subcategory on change
+    useEffect(() => {
+        if (!subcategory) return;
+        // alert(subcategory);
+        const searchParams = new URLSearchParams(location.search);
+        const brandsFromUrl = searchParams.get('brands')?.split(',') || [];
+        const colorsFromUrl = searchParams.get('colors')?.split(',') || [];
+        const sizesFromUrl = searchParams.get('sizes')?.split(',') || [];
+        const pricesFromUrl = searchParams.get('prices')?.split(',') || [];
+
+        if (brandsFromUrl.length) setfilterBrands(brandsFromUrl); // this happens when we are reloadig the page
+        else setfilterBrands([]); //on clicking new category the query is getting blank,  so emptying the states 
+
+        if (colorsFromUrl.length) setfilterColors(colorsFromUrl);// this happens when we are reloadig the page
+        else setfilterColors([]); //on clicking new category the query is getting blank,  so emptying the states
+
+
+        if (sizesFromUrl.length) setfilterSizes(sizesFromUrl); // this happens when we are reloadig the page
+        else setfilterSizes([]); //on clicking new category the query is getting blank,  so emptying the states
+
+        if (pricesFromUrl.length) setfilterPrices(pricesFromUrl); // this happens when we are reloadig the page
+        else setfilterPrices([]); //on clicking new category the query is getting blank,  so emptying the states
+
+        setFiltersReady(true);
+    }, [subcategory]);  // 👈 whenever the slug/category changes
+
+    
+    //main query filter
     useEffect(()=>{
 
         const filterProducts= async()=>{
+
             try{
+                if (!filtersReady){return;} // ⛔ don't fetch until filters loaded
                 console.log('brands',filterBrands);
-                console.log('prices',filterPrices);
+                console.log('prices',filterBrands);
                 console.log('SIZERS',filterSizes);
                 console.log('colors',filterColors);
+                
+
+                const searchParams = new URLSearchParams(location.search);
+                const brandsFromUrl = searchParams.get('brands')?.split(',') || [];
+                const colorsFromUrl = searchParams.get('colors')?.split(',') || [];
+                console.log(brandsFromUrl);
+                console.log(colorsFromUrl);
                 const backendUrl = process.env.REACT_APP_BACKEND_URL;
                 const filterProducts = await axios.get(`${backendUrl}/api/filter-products/`, {
                     params: {
-                      brands: filterBrands,
-                      prices: filterPrices,
-                      sizes: filterSizes,
-                      colors: filterColors,
+                        cat: subcategory,
+                        brands: filterBrands,
+                        prices: filterPrices,
+                        sizes: filterSizes,
+                        colors: filterColors,
+                        currentPage: null
                     },
                     withCredentials: true,
                 });
+                setCatProducts(filterProducts.data.products);
+                setPageInfo({
+                    currentPage: filterProducts.data.currentPage,
+                    totalPages: filterProducts.data.totalPages,
+                    totalProducts: filterProducts.data.total_products,
+                });
+                const minPrice = filterProducts.data.lowestPrice;
+                const maxPrice = filterProducts.data.highestPrice;
+                setPrices([minPrice, maxPrice]);
+                setSizes(filterProducts.data.sizes);
+                setBrands(filterProducts.data.brands);
+                setColors(filterProducts.data.colors);
+               
+                const queryParams = new URLSearchParams();
+
+                if (filterBrands.length > 0) queryParams.append('brands', filterBrands.join(','));
+                if (filterPrices.length > 0) queryParams.append('prices', filterPrices.join(','));
+                if (filterSizes.length > 0) queryParams.append('sizes', filterSizes.join(','));
+                if (filterColors.length > 0) queryParams.append('colors', filterColors.join(','));
+
+                const queryString = queryParams.toString();
+                if (filterBrands.length > 0 || filterPrices.length > 0 || filterSizes.length > 0 || filterColors.length > 0){
+                    navigate(`${location.pathname}?${queryString}`, { replace: true });
+                }
+                if (filterBrands.length == 0 && filterPrices.length == 0 && filterSizes.length == 0 && filterColors.length == 0){
+                    navigate(`${location.pathname}`, { replace: true });
+                }
+            
             }catch(err){
                 console.log('brands',err);
             }
@@ -236,7 +302,49 @@ const Store = () =>{
         filterProducts();
           
 
-    },[filterBrands,filterPrices,filterSizes,filterColors])
+    },[filtersReady,filterBrands,filterPrices,filterSizes,filterColors]);
+
+   
+
+
+    const pageChangefilterProducts= async(pageno)=>{
+        // alert("pagechamged");
+        // alert(subcategory);
+        try{
+
+            console.log('brands',filterBrands);
+            console.log('prices',filterBrands);
+            console.log('SIZERS',filterSizes);
+            console.log('colors',filterColors);
+            
+            const backendUrl = process.env.REACT_APP_BACKEND_URL;
+            const filterProducts = await axios.get(`${backendUrl}/api/filter-products/`, {
+                params: {
+                    cat: subcategory,
+                    brands: filterBrands,
+                    prices: filterPrices,
+                    sizes: filterSizes,
+                    colors: filterColors,
+                    currentPage: pageno
+                },
+                withCredentials: true,
+            });
+            setCatProducts(filterProducts.data.products);
+            setPageInfo({
+                currentPage: filterProducts.data.currentPage,
+                totalPages: filterProducts.data.totalPages,
+                totalProducts: filterProducts.data.total_products,
+            });
+            
+        }catch(err){
+            console.log('brands',err);
+        }
+    }
+    
+    const addToCart= async(itemId)=>{
+        alert(itemId);
+    }
+
 
     return(
         <>
@@ -309,6 +417,7 @@ const Store = () =>{
                                 </div>
                                 </div>
                             </div>
+                            {console.log(productPrices)}
                             <div className="card">
                                 <div className="card-heading">
                                 <a data-toggle="collapse" data-target="#collapseThree">Filter Price</a>
@@ -387,7 +496,8 @@ const Store = () =>{
                         <div className="row">
                             <div className="col-lg-6 col-md-6 col-sm-6">
                             <div className="shop__product__option__left">
-                                <p>Showing 1–12 of 126 results</p>
+                                { console.log(catProducts.currentPage)}
+                                <p>Showing {(pageInfo.currentPage - 1) * 3 + 1}–{Math.min(pageInfo.currentPage * 3, pageInfo.totalProducts)} of {pageInfo.totalProducts} results</p>
                             </div>
                             </div>
                             <div className="col-lg-6 col-md-6 col-sm-6">
@@ -399,6 +509,7 @@ const Store = () =>{
                                 <option value>$55 - $100</option>
                                 </select>
                             </div>
+                           
                             </div>
                         </div>
                         </div>
@@ -419,7 +530,10 @@ const Store = () =>{
                                 </div>
                                 <div className="product__item__text">
                                     <h6>{elem.name}</h6>
-                                    <a href="#" className="add-cart">+ Add To Cart</a>
+                                    <a href="#" onClick={(e) => {
+                                                    e.preventDefault();
+                                                    addToCart(elem._id);
+                                                    }} className="add-cart">+ Add To Cart</a>
                                     <div className="rating">
                                     <i className="fa fa-star-o" />
                                     <i className="fa fa-star-o" />
@@ -449,15 +563,7 @@ const Store = () =>{
                         
                         </div>
                         <div className="row">
-                        <div className="col-lg-12">
-                            <div className="product__pagination">
-                            <a className="active" href="#">1</a>
-                            <a href="#">2</a>
-                            <a href="#">3</a>
-                            <span>...</span>
-                            <a href="#">21</a>
-                            </div>
-                        </div>
+                        {renderPageNumbers()}
                         </div>
                     </div>
                     </div>

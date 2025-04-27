@@ -465,7 +465,10 @@ const Header = () => {
                     <Link to="/">Home</Link>
                     </li>
                     <li>
-                     <Link to="/men/men-t-shirts">Store</Link>
+                     <Link to="/men/men-t-shirts">Men T-Shirts</Link>
+                    </li>
+                    <li>
+                     <Link to="/men/men-jeans">Men Denims</Link>
                     </li>
                     <li><a href="#">Pages</a>
                     <ul className="dropdown">
@@ -476,7 +479,7 @@ const Header = () => {
                         <li><a href="./blog-details.html">Blog Details</a></li>
                     </ul>
                     </li>
-                    <li><a href="./blog.html">Blog</a></li>
+                    
                     <li><a href="./contact.html">Contacts</a></li>
                 </ul>
                 </nav>
