@@ -18,6 +18,8 @@ import { loginSuccess,logout } from "./redux/authSlice";
 import React, { useEffect } from "react";
 import axios from 'axios';
 import RequireAuth from './Utils/RequireAuth';
+
+import MyModal from './Pages/User/ModalTest';
 // Import jQuery if using it (since React doesn't include it by default)
 // import $ from "jquery";
 
@@ -48,7 +50,7 @@ const App = () => {
   return (
     <BrowserRouter>
       <Routes>
-        {/* <Route path="/" element={<Layout />}> */}
+          <Route path="/modal" element={<MyModal />} />
           <Route index element={<HomePage />} />
           {/* <Route path="blogs" element={<Blogs />} />
           <Route path="contact" element={<Contact />} /> */}

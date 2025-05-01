@@ -524,6 +524,7 @@ ol {
 
 .header__nav__option a:last-child {
 	margin-right: 0;
+	color:#000;
 }
 
 .header__nav__option .price {

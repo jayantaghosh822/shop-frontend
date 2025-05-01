@@ -9,10 +9,108 @@ import { useParams } from "react-router-dom";
 import { useNavigate, useLocation } from "react-router-dom"; // if you're using react-router-dom v6
 // import { useDispatch } from "react-redux";
 // import { loginSuccess } from "../redux/authSlice";
+
+import { CSSProperties } from "react";
+import { ClipLoader } from "react-spinners";
+import Button from 'react-bootstrap/Button';
+import Modal from 'react-bootstrap/Modal';
+const override = {
+    display: "block",
+    margin: "0 auto",
+    borderColor: "red",
+};
+
+
+
+
 const Store = () =>{
+    const [proSizes,setProSizes] = useState([]);
+    // const [proSizeChosens , setProSizeChosens] = useState([]);
+
+    // const setChosenProductsDetails = (proID , SizeID)=>{
+    //     setProSizeChosens(prev=>{
+    //         productDetails={
+    //             'proID' : proID,
+    //             'size' : SizeID
+    //         };
+    //     });
+    // }
+    const toggleProductSizeActiveClass = (sizeId)=> {
+        // alert(sizeId);
+        setProSizes(prev => {
+          const isSelected = prev.some(s => s === sizeId);
+          if (isSelected) {
+            return prev.filter(s => s !== sizeId);
+          } else {
+            return [...prev, sizeId];
+          }
+        });
+    };
+
+    const MyVerticallyCenteredModal =(props)=>{
+
+        console.log(props);
+        if(props.productData.name){
+            return (
+                <Modal
+                  {...props}
+                  size="sm"
+                  aria-labelledby="contained-modal-title-vcenter"
+                  centered
+                >
+                  <Modal.Header closeButton>
+                    <Modal.Title id="contained-modal-title-vcenter">
+                     <h6>{props.productData.name}</h6>
+                     {/* <img height="50" width="50" src={props.productData.images.mainImage}></img> */}
+                    </Modal.Title>
+                  </Modal.Header>
+                  <Modal.Body>
+                    {/* <h4>Centered Modal</h4> */}
+                    <div class="product__details__option__size">
+                                                <span>Size:</span>
+                                                {props.productData.size.map((size)=>{
+                                                    {console.log(size.size)}
+                                                    return(
+                                                    <label for="xxl" onClick={(e) => {
+                                                        e.preventDefault();
+                                                        // alert('test');
+                                                        toggleProductSizeActiveClass(`${props.productData._id}-${size._id}`);
+                                                        }} className={proSizes.some(s => s === `${props.productData._id}-${size._id}`)?'active':''}>{size.size}
+                                                        <input type="radio" id="xxl" />
+                                                    </label>
+                                                    );
+                                                     
+                                                   
+                                                   
+                                                })}
+                                                
+                                              
+                                            </div>
+                  </Modal.Body>
+                  <Modal.Footer>
+                    {/* <Button centered onClick={props.onHide}>Add To Cart</Button> */}
+                    <button class="w-100 btn btn-primary btn-lg" onClick={(e) => {
+                                                        e.preventDefault();
+                                                        // alert('test');
+                                                        addToCart(props.productData._id);
+                                                        }} type="submit" style={{ backgroundColor: '#0e0e0d' }}>Add To Cart</button>
+                  </Modal.Footer>
+                </Modal>
+              );
+        }
+     
+    }
+
+    
+    const addToCart= async(itemId)=>{
+        alert(itemId);
+        console.log(proSizes);
+    }
+
     useScript([
         "/assets/js/main.js",
     ]);
+    const [modalShow, setModalShow] = useState(true);
 
     //set products and filterLists
     const [catProducts,setCatProducts] = useState([]);
@@ -25,7 +123,7 @@ const Store = () =>{
     const [filtersReady, setFiltersReady] = useState(false);
     // const [totalPages , setTotalPages] = useState(0);
     //set products and filterLists
-
+    
     //filtering products
     const [filterBrands,setfilterBrands] = useState([]);
     const [filterPrices,setfilterPrices] = useState([]);
@@ -48,7 +146,7 @@ const Store = () =>{
           }
         });
     };
-
+  
     const renderPriceHtml = () => {
         if (!productPrices || productPrices.length === 0) return null;
       
@@ -209,6 +307,7 @@ const Store = () =>{
     // }, []); // <-- empty dependency array! runs only once
     
 
+
     //subcategory on change
     useEffect(() => {
         if (!subcategory) return;
@@ -254,6 +353,7 @@ const Store = () =>{
                 const colorsFromUrl = searchParams.get('colors')?.split(',') || [];
                 console.log(brandsFromUrl);
                 console.log(colorsFromUrl);
+                setLoading(true);
                 const backendUrl = process.env.REACT_APP_BACKEND_URL;
                 const filterProducts = await axios.get(`${backendUrl}/api/filter-products/`, {
                     params: {
@@ -266,7 +366,10 @@ const Store = () =>{
                     },
                     withCredentials: true,
                 });
+                setLoading(false);
                 setCatProducts(filterProducts.data.products);
+                const products = (filterProducts.data.products);
+                console.log(products);
                 setPageInfo({
                     currentPage: filterProducts.data.currentPage,
                     totalPages: filterProducts.data.totalPages,
@@ -316,7 +419,7 @@ const Store = () =>{
             console.log('prices',filterBrands);
             console.log('SIZERS',filterSizes);
             console.log('colors',filterColors);
-            
+            setLoading(true);
             const backendUrl = process.env.REACT_APP_BACKEND_URL;
             const filterProducts = await axios.get(`${backendUrl}/api/filter-products/`, {
                 params: {
@@ -329,6 +432,7 @@ const Store = () =>{
                 },
                 withCredentials: true,
             });
+            setLoading(false);
             setCatProducts(filterProducts.data.products);
             setPageInfo({
                 currentPage: filterProducts.data.currentPage,
@@ -340,16 +444,51 @@ const Store = () =>{
             console.log('brands',err);
         }
     }
-    
-    const addToCart= async(itemId)=>{
-        alert(itemId);
+
+
+    let [loading, setLoading] = useState(true);
+    let [color, setColor] = useState("#ffffff");
+
+    const MyLoader = ()=> {
+        if(loading){
+            return (
+                <div style={{
+                  position: "fixed",
+                  top: 0,
+                  left: 0,
+                  width: "100vw",
+                  height: "100vh",
+                  backgroundColor: "rgba(255, 255, 255, 0.7)", // optional: light background overlay
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  zIndex: 9999, // make sure it's on top
+                }}>
+                  <ClipLoader
+                    color="red"
+                    loading={loading}
+                    size={150}
+                    aria-label="Loading Spinner"
+                    data-testid="loader"
+                  />
+                </div>
+              );
+        }else{
+            return;
+        }
+       
     }
 
 
+
+    const [producModalData , setProducModalData] = useState({});
+    
     return(
         <>
-         <Layout>
-            <div>
+       {MyLoader()}
+        <Layout>
+
+            <div >
                 {/* Breadcrumb Section Begin */}
                 <section className="breadcrumb-option">
                 <div className="container">
@@ -526,14 +665,18 @@ const Store = () =>{
                                     </li>
                                     <li><a href="#"><img src="/assets/img/icon/search.png" alt="" /></a>
                                     </li> */}
+
+                               
                                     </ul>
                                 </div>
                                 <div className="product__item__text">
-                                    <h6>{elem.name}</h6>
-                                    <a href="#" onClick={(e) => {
-                                                    e.preventDefault();
-                                                    addToCart(elem._id);
-                                                    }} className="add-cart">+ Add To Cart</a>
+                                    <h6 >{elem.name}</h6>
+                                    <a href="#opneprobox" onClick={() => {setModalShow(true);setProducModalData(elem);}} className="add-cart">+ Add To Cart</a>
+                                                  
+                                    
+                                   
+
+                                       
                                     <div className="rating">
                                     <i className="fa fa-star-o" />
                                     <i className="fa fa-star-o" />
@@ -569,9 +712,17 @@ const Store = () =>{
                     </div>
                 </div>
                 </section>
+
+                <MyVerticallyCenteredModal
+                    show={modalShow}
+                    size="sm"
+                    onHide={() => setModalShow(false)}
+                    productData={producModalData}
+                />
                 {/* Shop Section End */}
             </div>
         </Layout>
+        
         </>
     );
 }

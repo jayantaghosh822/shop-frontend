@@ -315,3 +315,9 @@ padding:5px;
       transform: translate(-50%, -50%) !important;
   }
 }
+
+@media screen and (min-width: 1024px) {
+  .eDOCJf {
+      display: none;
+  }
+}
