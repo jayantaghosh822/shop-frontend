@@ -25,16 +25,8 @@ const override = {
 
 const Store = () =>{
     const [proSizes,setProSizes] = useState([]);
-    // const [proSizeChosens , setProSizeChosens] = useState([]);
+    const [cartButton , setCartButtonAttr] = useState(false);
 
-    // const setChosenProductsDetails = (proID , SizeID)=>{
-    //     setProSizeChosens(prev=>{
-    //         productDetails={
-    //             'proID' : proID,
-    //             'size' : SizeID
-    //         };
-    //     });
-    // }
     const toggleProductSizeActiveClass = (sizeId)=> {
         // alert(sizeId);
         setProSizes(prev => {
@@ -47,10 +39,23 @@ const Store = () =>{
         });
     };
 
+    // const  addToCartVisibility = (proId)=>{
+    //     return true;
+    // }
     const MyVerticallyCenteredModal =(props)=>{
-
-        console.log(props);
+        // console.log(props);
+        let disabled = true;
+        
         if(props.productData.name){
+            console.log(props);
+            console.log(proSizes);
+            proSizes.map((proSize)=>{
+                // console.log(ele);
+                // console.log(props.productData._id);
+                if(proSize.includes(props.productData._id)){
+                    disabled = false;
+                }
+            })
             return (
                 <Modal
                   {...props}
@@ -88,8 +93,8 @@ const Store = () =>{
                                             </div>
                   </Modal.Body>
                   <Modal.Footer>
-                    {/* <Button centered onClick={props.onHide}>Add To Cart</Button> */}
-                    <button class="w-100 btn btn-primary btn-lg" onClick={(e) => {
+                  
+                    <button disabled={disabled} class="w-100 btn btn-primary btn-lg" onClick={(e) => {
                                                         e.preventDefault();
                                                         // alert('test');
                                                         addToCart(props.productData._id);
@@ -103,8 +108,13 @@ const Store = () =>{
 
     
     const addToCart= async(itemId)=>{
-        alert(itemId);
+        // alert(itemId);
+        console.log(itemId);
         console.log(proSizes);
+        const sizeSelectedSpecificToProduct = proSizes.filter((proSize) =>
+            proSize.includes(itemId)
+        );
+        console.log(sizeSelectedSpecificToProduct);
     }
 
     useScript([
