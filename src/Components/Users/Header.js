@@ -10,12 +10,13 @@ import { Outlet, Link } from "react-router-dom";
 import { GoogleLogin } from '@react-oauth/google';
 import { googleLogout, useGoogleLogin } from '@react-oauth/google';
 import { validatePassword } from '../../Utils/ValiadatePass';
-
-// import "react-toastify/dist/ReactToastify.css";
+import { fetchCart,cleanCart } from '../../redux/cartSlice';
+import "react-toastify/dist/ReactToastify.css";
 // import {NotificationContainer, NotificationManager} from 'react-notifications';
 
 const Header = () => {
     const authuser = useSelector((state) => state.auth.user);
+   
     const registerRef = useRef(null);
     const loginRef = useRef(null);
     useEffect(() => {
@@ -51,8 +52,8 @@ const Header = () => {
     }
     const handleRegisterFormChange = (e)=>{
         const {name , value} = e.target;
-        console.log(name);
-        console.log(value);
+        // console.log(name);
+        // console.log(value);
         setRegisterFormData({
             ...RegisterformData,
             [name]:value
@@ -94,7 +95,7 @@ const Header = () => {
         // NotificationManager.success('Success message', 'Title here');
         e.preventDefault();
         const backendUrl = process.env.REACT_APP_BACKEND_URL;
-        console.log("Backend URL:", RegisterformData);
+        // console.log("Backend URL:", RegisterformData);
         const userDetails = {
             firstname: RegisterformData.userFirstName,
             lastname: RegisterformData.userLastName,
@@ -150,7 +151,11 @@ const Header = () => {
     }
 
     const [loginFormState , showloginForm] = useState(false);
-    const [user , setUser] = useState({});
+    // const [googleUser , setGoogleUser] = useState({
+    //     "name":'',
+    //     "email":'',
+    //     "userType":''
+    // });
     const LoginFormToggle = () =>{
         showloginForm(prevState => !prevState); // Toggle between true/false
         // document.getElementById('signin').style.display = 'none';
@@ -164,8 +169,8 @@ const Header = () => {
 
     const handleLoginFormChange = (e)=>{
         const {name , value} = e.target;
-        console.log(name);
-        console.log(value);
+        // console.log(name);
+        // console.log(value);
         setLoginFormData({
             ...LoginformData,
             [name]:value
@@ -208,8 +213,8 @@ const Header = () => {
                     draggable: true,
                     progress: undefined,
                 });
-                console.log(userLogin.data.user);
-                setUser(userLogin.data.user);
+                // console.log(userLogin.data.user);
+                // setUser(userLogin.data.user);
                 setdisplayNamestate(false);
                 // sessionStorage.setItem('user',JSON.stringify(userLogin.data.user));
                 // console.log();
@@ -240,17 +245,21 @@ const Header = () => {
     const [ profile, setProfile ] = useState([]);
 
     const login = useGoogleLogin({
-        onSuccess: (codeResponse) => {setUser(codeResponse); console.log(codeResponse)},
+        onSuccess: (codeResponse) => {setGoogleUser(codeResponse); console.log(codeResponse)},
         onError: (error) => console.log('Login Failed:', error)
     });
+
+    // const login = ()=>{
+    //     return 'abcd';
+    // }
       
     useEffect(
         () => {
-            if (user) {
+            if (googleuser && googleuser.access_token) {
                 axios
-                    .get(`https://www.googleapis.com/oauth2/v1/userinfo?access_token=${user.access_token}`, {
+                    .get(`https://www.googleapis.com/oauth2/v1/userinfo?access_token=${googleuser.access_token}`, {
                         headers: {
-                            Authorization: `Bearer ${user.access_token}`,
+                            Authorization: `Bearer ${googleuser.access_token}`,
                             Accept: 'application/json'
                         }
                     })
@@ -295,7 +304,7 @@ const Header = () => {
                     .catch((err) => console.log(err));
             }
         },
-        [ user ]
+        [ googleuser ]
     );
 
     // log out function to log the user out of google and set the profile array to null
@@ -306,11 +315,55 @@ const Header = () => {
         .then(res=>{
             alert("logging out ");
             dispatch(logout());
+            dispatch(cleanCart());
         })
         
         // setProfile(null);
     };
 
+    // const [cartArr , setCartArr] = useState([]);
+    const cart = useSelector((state) => state.cart);
+    // console.log(cart);
+    
+    // useEffect(() => {
+    //     if (user.email) {
+    //         console.log("mu user1",user);
+    //     dispatch(fetchCart());
+    //     }
+    // }, [dispatch, user])
+
+    useEffect(() => {
+        const addLocalItemsToCart = async()=>{
+            // console.log(JSON.parse(localStorage.getItem('cartItems')));
+            const backendUrl = process.env.REACT_APP_BACKEND_URL;
+            const unSavedCartItems = JSON.parse(localStorage.getItem('unSavedCartItems'));
+            if(unSavedCartItems){
+            await axios.post(`${backendUrl}/api/add-local-items-to-cart/`, {
+                unSavedCartItems: unSavedCartItems
+                }, {
+                withCredentials: true
+            });
+            localStorage.removeItem('unSavedCartItems');
+            }
+            dispatch(fetchCart());
+            
+        }
+        if (authuser && authuser.email) {
+            // console.log("mu user2",authuser);
+           
+            addLocalItemsToCart();
+            // dispatch(fetchCart());
+        }
+    }, [dispatch, authuser])
+
+    // useEffect(()=>{
+    //     const itemArray = Object.entries(cart.items).map(([id, item]) => ({
+    //         id,
+    //         ...item
+    //     }));
+    //     console.log(cart);
+    //     console.log(itemArray);
+    // },[cart])
   return (
    
     <div>
@@ -326,6 +379,7 @@ const Header = () => {
                 <span class="" style={{ color: '#0e0e0d' }}>(3)</span>
                 </h4>
                 <ul class="list-group mb-3">
+                    {/* {cart && cart.} */}
                 <li class="list-group-item d-flex justify-content-between lh-sm">
                     <div>
                     <h6 class="my-0">Growers cider</h6>
@@ -376,9 +430,9 @@ const Header = () => {
                 {
                     <>
                     {/* <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIj48cGF0aCBkPSJNMTcuNiA5LjJsLS4xLTEuOEg5djMuNGg0LjhDMTMuNiAxMiAxMyAxMyAxMiAxMy42djIuMmgzYTguOCA4LjggMCAwIDAgMi42LTYuNnoiIGZpbGw9IiM0Mjg1RjQiIGZpbGwtcnVsZT0ibm9uemVybyIvPjxwYXRoIGQ9Ik05IDE4YzIuNCAwIDQuNS0uOCA2LTIuMmwtMy0yLjJhNS40IDUuNCAwIDAgMS04LTIuOUgxVjEzYTkgOSAwIDAgMCA4IDV6IiBmaWxsPSIjMzRBODUzIiBmaWxsLXJ1bGU9Im5vbnplcm8iLz48cGF0aCBkPSJNNCAxMC43YTUuNCA1LjQgMCAwIDEgMC0zLjRWNUgxYTkgOSAwIDAgMCAwIDhsMy0yLjN6IiBmaWxsPSIjRkJCQzA1IiBmaWxsLXJ1bGU9Im5vbnplcm8iLz48cGF0aCBkPSJNOSAzLjZjMS4zIDAgMi41LjQgMy40IDEuM0wxNSAyLjNBOSA5IDAgMCAwIDEgNWwzIDIuNGE1LjQgNS40IDAgMCAxIDUtMy43eiIgZmlsbD0iI0VBNDMzNSIgZmlsbC1ydWxlPSJub256ZXJvIi8+PHBhdGggZD0iTTAgMGgxOHYxOEgweiIvPjwvZz48L3N2Zz4="></img> */}
-                {/* <button type="button" class="login-with-google-btn" onClick={login}>
+                <button type="button" class="login-with-google-btn" onClick={login}>
                     Sign in with Google
-                </button> */}
+                </button>
                     </>
                 
                 }
@@ -401,7 +455,7 @@ const Header = () => {
                 {
                     <>
                     {/* <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIj48cGF0aCBkPSJNMTcuNiA5LjJsLS4xLTEuOEg5djMuNGg0LjhDMTMuNiAxMiAxMyAxMyAxMiAxMy42djIuMmgzYTguOCA4LjggMCAwIDAgMi42LTYuNnoiIGZpbGw9IiM0Mjg1RjQiIGZpbGwtcnVsZT0ibm9uemVybyIvPjxwYXRoIGQ9Ik05IDE4YzIuNCAwIDQuNS0uOCA2LTIuMmwtMy0yLjJhNS40IDUuNCAwIDAgMS04LTIuOUgxVjEzYTkgOSAwIDAgMCA4IDV6IiBmaWxsPSIjMzRBODUzIiBmaWxsLXJ1bGU9Im5vbnplcm8iLz48cGF0aCBkPSJNNCAxMC43YTUuNCA1LjQgMCAwIDEgMC0zLjRWNUgxYTkgOSAwIDAgMCAwIDhsMy0yLjN6IiBmaWxsPSIjRkJCQzA1IiBmaWxsLXJ1bGU9Im5vbnplcm8iLz48cGF0aCBkPSJNOSAzLjZjMS4zIDAgMi41LjQgMy40IDEuM0wxNSAyLjNBOSA5IDAgMCAwIDEgNWwzIDIuNGE1LjQgNS40IDAgMCAxIDUtMy43eiIgZmlsbD0iI0VBNDMzNSIgZmlsbC1ydWxlPSJub256ZXJvIi8+PHBhdGggZD0iTTAgMGgxOHYxOEgweiIvPjwvZz48L3N2Zz4="></img> */}
-                <button type="button" class="login-with-google-btn" onClick={login}>
+                <button type="button" class="login-with-google-btn" onClick={() => login()}>
                     Sign in with Google
                 </button>
                     </>
@@ -422,7 +476,7 @@ const Header = () => {
            
             <a href="#" onClick={RegisterFormToggle}>{authuser?(authuser.name):'Sign up'}</a>
             <a href="#" onClick={LoginFormToggle}>Sign in</a>
-            <a href="#" hidden={displaynameState}>{user.displayName}</a>
+            <a href="#" hidden={displaynameState}>{authuser?(authuser.displayName):''}</a>
             <a href="#">Logout</a>
             </div>
             <div className="offcanvas__top__hover">
@@ -460,11 +514,12 @@ const Header = () => {
                 <div className="header__top__right">
                     <div className="header__top__links">
                     <a href="#" >{authuser?(authuser.name):''}</a>
+                    {console.log(authuser)}
                     {
-                    !authuser && (
+                    (!authuser) && (
                         <>
-                        <a href="#" onClick={RegisterFormToggle} hidden={displayRegisterButton}>Sign up</a>
-                        <a href="#" onClick={LoginFormToggle} hidden={displayLoginButton}>Sign in</a>
+                        <a href="#" onClick={RegisterFormToggle} >Sign up</a>
+                        <a href="#" onClick={LoginFormToggle} >Sign in</a>
                         </>
                     )
                     }

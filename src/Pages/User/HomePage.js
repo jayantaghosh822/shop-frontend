@@ -7,7 +7,7 @@ const HomePage = () => {
      "/assets/js/main.js",
   ]);
   return (
-    <Layout>
+    <>
         <div>
         {/* Hero Section Begin */}
         <section className="hero">
@@ -510,7 +510,7 @@ const HomePage = () => {
         </section>
         {/* Latest Blog Section End */}
       </div>
-    </Layout>
+    </>
   );
 };
 

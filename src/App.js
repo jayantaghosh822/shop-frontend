@@ -12,14 +12,15 @@ import AllCategories from './Pages/Admin/AllCategory';
 import ProductLayout from './Pages/Admin/ProductLayout';
 import CreateProduct from './Pages/Admin/CreateProduct';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { googleLogout, useGoogleLogin } from '@react-oauth/google';
+// import { googleLogout, useGoogleLogin } from '@react-oauth/google';
 import { useDispatch } from "react-redux";
 import { loginSuccess,logout } from "./redux/authSlice";
 import React, { useEffect } from "react";
 import axios from 'axios';
 import RequireAuth from './Utils/RequireAuth';
-
+import Layout from './Layouts/User/Layout';
 import MyModal from './Pages/User/ModalTest';
+// import { reduxAddToCart } from './redux/cartSlice';
 // Import jQuery if using it (since React doesn't include it by default)
 // import $ from "jquery";
 
@@ -34,6 +35,7 @@ const App = () => {
         if(userStatus.data.success){
           // if(userStatus.data.user){
             dispatch(loginSuccess({ user: userStatus.data.user }));
+            // dispatch(addToCart({ items: userStatus.data.user }));
           // }
          
           // dispatch(loginSuccess({ loading: false }));
@@ -49,7 +51,8 @@ const App = () => {
 
   return (
     <BrowserRouter>
-      <Routes>
+    <Layout>
+    <Routes>
           <Route path="/modal" element={<MyModal />} />
           <Route index element={<HomePage />} />
           {/* <Route path="blogs" element={<Blogs />} />
@@ -103,6 +106,8 @@ const App = () => {
           {/* <Route path="/create-product" element={<CreateProduct />} /> */}
         {/* </Route> */}
       </Routes>
+    </Layout>
+     
     </BrowserRouter>
     // <Store />
   );

@@ -7,8 +7,9 @@ import useScript from "../../Hooks/jsLoader";
 import Layout from "../../Layouts/User/Layout";
 import { useParams } from "react-router-dom";
 import { useNavigate, useLocation } from "react-router-dom"; // if you're using react-router-dom v6
-// import { useDispatch } from "react-redux";
-// import { loginSuccess } from "../redux/authSlice";
+import { useDispatch } from "react-redux";
+import { reduxAddToCart } from '../../redux/cartSlice';
+import { useSelector } from "react-redux";
 
 import { CSSProperties } from "react";
 import { ClipLoader } from "react-spinners";
@@ -22,21 +23,55 @@ const override = {
 
 
 
-
 const Store = () =>{
     const [proSizes,setProSizes] = useState([]);
-    const [cartButton , setCartButtonAttr] = useState(false);
+    const [sizesChosenForProducts , setSizesChosenForProducts] = useState({});
+    const [itemsInCart , setItemsInCart] = useState([]);
 
-    const toggleProductSizeActiveClass = (sizeId)=> {
-        // alert(sizeId);
-        setProSizes(prev => {
-          const isSelected = prev.some(s => s === sizeId);
-          if (isSelected) {
-            return prev.filter(s => s !== sizeId);
-          } else {
-            return [...prev, sizeId];
-          }
-        });
+    const cart = useSelector((state) => state.cart);
+    console.log(cart);
+    // useEffect(()=>{
+    //     console.log(itemsInCart);
+    //     console.log(cart);
+    // },[cart])
+    const toggleProductSizeActiveClass = (proID , proName, sizeID ,size ,price)=> {
+        // alert(proID);
+        // alert(sizeID);
+        const ifSizeExists = Object.entries(sizesChosenForProducts).some(
+            ([key, value]) => key==proID && value.sizeId == sizeID
+        );
+        setSizesChosenForProducts(prev => 
+            {
+                if(!ifSizeExists){
+                    return {
+                        ...prev,
+                        [proID]: {
+                        name: proName,
+                        size,
+                        sizeId: sizeID,
+                        price
+                        }
+                    };
+                }else{
+                    const sizesUnderPro ={ ...prev};
+                    delete sizesUnderPro[proID];
+
+                    // console.log("my sizes under pro",sizesUnderPro);
+                    return sizesUnderPro;
+                    
+                }
+               
+            }
+        );
+        const prosizeId = `${proID}-${sizeID}`;
+        // setProSizes(prev => {
+        //   const isSelected = prev.some(s => s === prosizeId);
+        //   if (isSelected) {
+        //     return prev.filter(s => s !== prosizeId);
+        //   } else {
+        //     return [...prev, prosizeId];
+        //   }
+        // });
     };
 
     // const  addToCartVisibility = (proId)=>{
@@ -47,15 +82,13 @@ const Store = () =>{
         let disabled = true;
         
         if(props.productData.name){
-            console.log(props);
-            console.log(proSizes);
-            proSizes.map((proSize)=>{
-                // console.log(ele);
-                // console.log(props.productData._id);
-                if(proSize.includes(props.productData._id)){
-                    disabled = false;
-                }
-            })
+            // console.log(props);
+            // console.log(proSizes);
+            disabled = !(Object.entries(sizesChosenForProducts).some(
+                ([key, value]) => key==props.productData._id
+            ));
+            // console.log("productID",props.productData._id);
+            // console.log("cart butt",disabled);
             return (
                 <Modal
                   {...props}
@@ -72,25 +105,22 @@ const Store = () =>{
                   <Modal.Body>
                     {/* <h4>Centered Modal</h4> */}
                     <div class="product__details__option__size">
-                                                <span>Size:</span>
-                                                {props.productData.size.map((size)=>{
-                                                    {console.log(size.size)}
-                                                    return(
-                                                    <label for="xxl" onClick={(e) => {
-                                                        e.preventDefault();
-                                                        // alert('test');
-                                                        toggleProductSizeActiveClass(`${props.productData._id}-${size._id}`);
-                                                        }} className={proSizes.some(s => s === `${props.productData._id}-${size._id}`)?'active':''}>{size.size}
-                                                        <input type="radio" id="xxl" />
-                                                    </label>
-                                                    );
-                                                     
-                                                   
-                                                   
-                                                })}
-                                                
-                                              
-                                            </div>
+                        <span>Size:</span>
+                        {props.productData.size.map((size)=>{
+                            // {console.log(size.size)}
+                            return(
+                            <label for="xxl" onClick={(e) => {
+                                e.preventDefault();
+                                // alert('test');
+                                toggleProductSizeActiveClass(props.productData._id,props.productData.name,size._id,size.size,size.price);
+                                }} className={Object.values(sizesChosenForProducts).some(
+                                    product => product.sizeId === size._id
+                                  )?'active':''}>{size.size}
+                                <input type="radio" id="xxl" />
+                            </label>
+                            );
+                        })}
+                    </div>
                   </Modal.Body>
                   <Modal.Footer>
                   
@@ -98,23 +128,92 @@ const Store = () =>{
                                                         e.preventDefault();
                                                         // alert('test');
                                                         addToCart(props.productData._id);
-                                                        }} type="submit" style={{ backgroundColor: '#0e0e0d' }}>Add To Cart</button>
+                    }} type="submit" style={{ backgroundColor: '#0e0e0d' }}>Add To Cart</button>
+
                   </Modal.Footer>
                 </Modal>
               );
         }
      
     }
-
-    
+    const authuser = useSelector((state) => state.auth.user);
+    console.log("category Page user",authuser);
+    const dispatch = useDispatch();
     const addToCart= async(itemId)=>{
-        // alert(itemId);
-        console.log(itemId);
-        console.log(proSizes);
-        const sizeSelectedSpecificToProduct = proSizes.filter((proSize) =>
-            proSize.includes(itemId)
-        );
-        console.log(sizeSelectedSpecificToProduct);
+        try{
+        const productData = {
+            'product': itemId,
+            'metaData':{
+                'name': sizesChosenForProducts[itemId].name,
+                'size': sizesChosenForProducts[itemId].size,
+                'price': sizesChosenForProducts[itemId].price
+            },
+            'quan':1
+            
+        };
+        let itemData = {};
+        if(authuser){
+            const backendUrl = process.env.REACT_APP_BACKEND_URL;
+            const addToCart = await axios.post(`${backendUrl}/api/add-to-cart/`, {
+                productData: productData
+              }, {
+                withCredentials: true
+            });
+            toast.success(addToCart.data.message, {
+                position: "top-right",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+            });
+            itemData = {
+                [addToCart.data.itemSaved._id] :{
+                    'productId':addToCart.data.itemSaved.product,
+                    'metaData':addToCart.data.itemSaved.metaData
+                }
+            }
+            console.log(itemData);
+            setItemsInCart(prev=>{
+                return{
+                    ...prev,
+                    ...itemData
+                }
+            });
+        }else{
+            const tempId = `temp_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+            itemData = {
+                [tempId]:{
+                    'productId':itemId,
+                    'metaData':{
+                        'name': sizesChosenForProducts[itemId].name,
+                        'size': sizesChosenForProducts[itemId].size,
+                        'price': sizesChosenForProducts[itemId].price
+                    }
+                }
+            }
+            setItemsInCart(prev=>{
+                return{
+                    ...prev,
+                    ...itemData
+                }
+            });
+        }
+
+        
+        
+
+
+        setModalShow(false);
+       
+        dispatch(reduxAddToCart({ itemData,authuser }));
+        }catch(err){
+
+        }
+       
+        
+        
     }
 
     useScript([
@@ -202,7 +301,7 @@ const Store = () =>{
     const renderSizeHtml = () => {
         if (!productSizes || productSizes.length === 0) return null;
       
-       console.log(productSizes);
+    //    console.log(productSizes);
         let sizeArray = [];
         let sizeFilterList = [];
      
@@ -266,7 +365,7 @@ const Store = () =>{
     };
 
     const renderPageNumbers = ()=>{
-        console.log(pageInfo);
+        // console.log(pageInfo);
         let storeLinks = [];
         for(let i=1 ; i<=pageInfo.totalPages ; i++){
             storeLinks.push(
@@ -286,7 +385,7 @@ const Store = () =>{
                
             );
         }
-        console.log(storeLinks);
+        // console.log(storeLinks);
         return(
             <div className="col-lg-12">
                 <div className="product__pagination">
@@ -352,17 +451,17 @@ const Store = () =>{
 
             try{
                 if (!filtersReady){return;} // ⛔ don't fetch until filters loaded
-                console.log('brands',filterBrands);
-                console.log('prices',filterBrands);
-                console.log('SIZERS',filterSizes);
-                console.log('colors',filterColors);
+                // console.log('brands',filterBrands);
+                // console.log('prices',filterBrands);
+                // console.log('SIZERS',filterSizes);
+                // console.log('colors',filterColors);
                 
 
                 const searchParams = new URLSearchParams(location.search);
                 const brandsFromUrl = searchParams.get('brands')?.split(',') || [];
                 const colorsFromUrl = searchParams.get('colors')?.split(',') || [];
-                console.log(brandsFromUrl);
-                console.log(colorsFromUrl);
+                // console.log(brandsFromUrl);
+                // console.log(colorsFromUrl);
                 setLoading(true);
                 const backendUrl = process.env.REACT_APP_BACKEND_URL;
                 const filterProducts = await axios.get(`${backendUrl}/api/filter-products/`, {
@@ -379,7 +478,7 @@ const Store = () =>{
                 setLoading(false);
                 setCatProducts(filterProducts.data.products);
                 const products = (filterProducts.data.products);
-                console.log(products);
+                // console.log(products);
                 setPageInfo({
                     currentPage: filterProducts.data.currentPage,
                     totalPages: filterProducts.data.totalPages,
@@ -408,7 +507,7 @@ const Store = () =>{
                 }
             
             }catch(err){
-                console.log('brands',err);
+                // console.log('brands',err);
             }
         }
         
@@ -425,10 +524,10 @@ const Store = () =>{
         // alert(subcategory);
         try{
 
-            console.log('brands',filterBrands);
-            console.log('prices',filterBrands);
-            console.log('SIZERS',filterSizes);
-            console.log('colors',filterColors);
+            // console.log('brands',filterBrands);
+            // console.log('prices',filterBrands);
+            // console.log('SIZERS',filterSizes);
+            // console.log('colors',filterColors);
             setLoading(true);
             const backendUrl = process.env.REACT_APP_BACKEND_URL;
             const filterProducts = await axios.get(`${backendUrl}/api/filter-products/`, {
@@ -451,7 +550,7 @@ const Store = () =>{
             });
             
         }catch(err){
-            console.log('brands',err);
+            // console.log('brands',err);
         }
     }
 
@@ -496,8 +595,9 @@ const Store = () =>{
     return(
         <>
        {MyLoader()}
-        <Layout>
-
+        <>
+{/* {console.log(sizesChosenForProducts)} */}
+{/* {console.log(itemsInCart)} */}
             <div >
                 {/* Breadcrumb Section Begin */}
                 <section className="breadcrumb-option">
@@ -566,7 +666,7 @@ const Store = () =>{
                                 </div>
                                 </div>
                             </div>
-                            {console.log(productPrices)}
+                            {/* {console.log(productPrices)} */}
                             <div className="card">
                                 <div className="card-heading">
                                 <a data-toggle="collapse" data-target="#collapseThree">Filter Price</a>
@@ -645,7 +745,7 @@ const Store = () =>{
                         <div className="row">
                             <div className="col-lg-6 col-md-6 col-sm-6">
                             <div className="shop__product__option__left">
-                                { console.log(catProducts.currentPage)}
+                                {/* { console.log(catProducts.currentPage)} */}
                                 <p>Showing {(pageInfo.currentPage - 1) * 3 + 1}–{Math.min(pageInfo.currentPage * 3, pageInfo.totalProducts)} of {pageInfo.totalProducts} results</p>
                             </div>
                             </div>
@@ -681,12 +781,14 @@ const Store = () =>{
                                 </div>
                                 <div className="product__item__text">
                                     <h6 >{elem.name}</h6>
+                                    {/* {console.log(cart)} */}
+                                    {(Object.entries(cart.items).some(
+                                             ([key, value]) => value.productId==elem._id
+                                    ))?
+                                    <a href="#opneprobox" className="add-cart">Added To Cart</a>:
                                     <a href="#opneprobox" onClick={() => {setModalShow(true);setProducModalData(elem);}} className="add-cart">+ Add To Cart</a>
-                                                  
-                                    
-                                   
-
-                                       
+                                    }
+                                    {/* <a href="#opneprobox" onClick={() => {setModalShow(true);setProducModalData(elem);}} className="add-cart">+ Add To Cart</a> */}
                                     <div className="rating">
                                     <i className="fa fa-star-o" />
                                     <i className="fa fa-star-o" />
@@ -731,7 +833,7 @@ const Store = () =>{
                 />
                 {/* Shop Section End */}
             </div>
-        </Layout>
+        </>
         
         </>
     );
