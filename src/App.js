@@ -22,6 +22,7 @@ import RequireAuth from './Utils/RequireAuth';
 import Layout from './Layouts/User/Layout';
 import AdminLayout from './Layouts/Admin/AdminLayout';
 import MyModal from './Pages/User/ModalTest';
+import ErrorPage from './Components/Pages/404.js';
 // import { reduxAddToCart } from './redux/cartSlice';
 // Import jQuery if using it (since React doesn't include it by default)
 // import $ from "jquery";
@@ -65,6 +66,8 @@ const App = () => {
           </Route>
           <Route path="store" element={<Store />} />
           <Route path=":category/:subcategory" element={<Store />} />
+
+          <Route path="*" element={<ErrorPage />} />
         </Route>
 
         {/* 🔐 Admin layout (protected) */}
