@@ -3,6 +3,7 @@ import './App.css';
 import HomePage from './Pages/User/HomePage';
 import ResetPassword from './Pages/User/ResetPassword';
 import Store from './Pages/User/Category';
+// import Store from './Pages/User/TestCategory';
 import AdminDashboard from './Pages/Admin/AdminDashboard';
 import AdminDashboardHome from './Pages/Admin/AdminDashboardHome';
 import CategoryLayout from './Pages/Admin/CategoryLayout';
@@ -19,6 +20,7 @@ import React, { useEffect } from "react";
 import axios from 'axios';
 import RequireAuth from './Utils/RequireAuth';
 import Layout from './Layouts/User/Layout';
+import AdminLayout from './Layouts/Admin/AdminLayout';
 import MyModal from './Pages/User/ModalTest';
 // import { reduxAddToCart } from './redux/cartSlice';
 // Import jQuery if using it (since React doesn't include it by default)
@@ -51,65 +53,42 @@ const App = () => {
 
   return (
     <BrowserRouter>
-    <Layout>
-    <Routes>
-          <Route path="/modal" element={<MyModal />} />
+      <Routes>
+
+        {/* 🌐 Website layout */}
+        <Route path="/" element={<Layout />}>
           <Route index element={<HomePage />} />
-          {/* <Route path="blogs" element={<Blogs />} />
-          <Route path="contact" element={<Contact />} /> */}
-          <Route path="/password-reset" element={<ResetPassword />}>
+          <Route path="modal" element={<MyModal />} />
+          <Route path="password-reset">
             <Route index element={<ResetPassword />} />
             <Route path=":userID/:token" element={<ResetPassword />} />
           </Route>
-         
-          <Route path="/store" element={<Store />} />
-          <Route path="/:category/:subcategory" element={<Store />} />
+          <Route path="store" element={<Store />} />
+          <Route path=":category/:subcategory" element={<Store />} />
+        </Route>
 
+        {/* 🔐 Admin layout (protected) */}
+        <Route
+          path="/admin"
+          element={
+            <RequireAuth>
+              <AdminLayout />
+            </RequireAuth>
+          }
+        >
+          <Route index element={<AdminDashboardHome />} />
+          <Route path="category" element={<CategoryLayout />}>
+            <Route index element={<AllCategories />} />
+            <Route path="create" element={<CreateCategory />} />
+            <Route path="edit/:slug" element={<EditCategory />} />
+          </Route>
+          <Route path="product" element={<ProductLayout />}>
+            <Route path="create" element={<CreateProduct />} />
+          </Route>
+        </Route>
 
-            {/* <Route path="/admin" element={<AdminDashboard />}>
-              <Route index element={<AdminDashboardHome />} />
-              <Route path="category" elemnt={<CategoryLayout />}>
-               <Route index element={<AllCategories />} />
-               <Route path="create" element={<CreateCategory/>} />
-               <Route path="edit/:slug" element={<EditCategory/>} />
-              </Route>
-              <Route path="product" elemnt={<ProductLayout />}>
-             
-               <Route path="create" element={<CreateProduct/>} />
-              
-              </Route>
-              
-              
-            </Route> */}
-
-            <Route
-              path="/admin"
-              element={
-                <RequireAuth>
-                  <AdminDashboard />
-                </RequireAuth>
-              }
-            >
-                <Route index element={<AdminDashboardHome />} />
-                <Route path="category" element={<CategoryLayout />}>
-                  <Route index element={<AllCategories />} />
-                  <Route path="create" element={<CreateCategory />} />
-                  <Route path="edit/:slug" element={<EditCategory />} />
-                </Route>
-                <Route path="product" element={<ProductLayout />}>
-                  <Route path="create" element={<CreateProduct />} />
-                </Route>
-            </Route>
-
-
-
-          {/* <Route path="/create-product" element={<CreateProduct />} /> */}
-        {/* </Route> */}
       </Routes>
-    </Layout>
-     
     </BrowserRouter>
-    // <Store />
   );
 }
 

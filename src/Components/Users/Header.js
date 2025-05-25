@@ -275,8 +275,8 @@ const Header = () => {
                         try{
                         const userLoginByGoogle = await axios.post(backendUrl+'/api/user/auth-google', userDetails , { withCredentials: true });
                         // console.log(userLoginByGoogle.data.user);
-                        // showregisterForm(prevState => !prevState);
-                        showloginForm(prevState => !prevState);
+                        showregisterForm(false);
+                        showloginForm(false);
                        
                         dispatch(loginSuccess({ user: userLoginByGoogle.data.user }));
                         toast.success(userLoginByGoogle.data.message, {
@@ -315,7 +315,7 @@ const Header = () => {
         .then(res=>{
             alert("logging out ");
             dispatch(logout());
-            dispatch(cleanCart());
+            // dispatch(cleanCart());
         })
         
         // setProfile(null);
@@ -323,7 +323,12 @@ const Header = () => {
 
     // const [cartArr , setCartArr] = useState([]);
     const cart = useSelector((state) => state.cart);
-    // console.log(cart);
+    let cartTotal = 0;
+    Object.keys(cart.items).map((key , index)=>{
+        cartTotal = cartTotal + cart.items[key].metaData.price;
+    })
+
+    console.log(cartTotal);
     
     // useEffect(() => {
     //     if (user.email) {
@@ -364,30 +369,46 @@ const Header = () => {
     //     console.log(cart);
     //     console.log(itemArray);
     // },[cart])
+
+    // const [cartSidebar , setCartSidebar] = useState(false);
+
+    const handleCartCheckOut = ()=>{
+        if(!authuser){
+            showloginForm(true);
+            document.getElementById('cart-close').click();
+        }
+        
+    }
+
   return (
    
     <div>
          <ToastContainer />
         <div class="offcanvas offcanvas-end" data-bs-scroll="true" tabindex="-1" id="offcanvasCart" aria-labelledby="My Cart">
             <div class="offcanvas-header justify-content-center">
-            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" id="cart-close" aria-label="Close"></button>
             </div>
             <div class="offcanvas-body">
             <div class="order-md-last">
                 <h4 class="d-flex justify-content-between align-items-center mb-3">
                 <span class="" style={{ color: '#0e0e0d' }}>Your cart</span>
-                <span class="" style={{ color: '#0e0e0d' }}>(3)</span>
+                <span class="" style={{ color: '#0e0e0d' }}>({Object.keys(cart.items).length})</span>
                 </h4>
                 <ul class="list-group mb-3">
                     {/* {cart && cart.} */}
-                <li class="list-group-item d-flex justify-content-between lh-sm">
-                    <div>
-                    <h6 class="my-0">Growers cider</h6>
-                    <small class="text-body-secondary">Brief description</small>
-                    </div>
-                    <span class="text-body-secondary">$12</span>
-                </li>
-                <li class="list-group-item d-flex justify-content-between lh-sm">
+                {Object.keys(cart.items).map((item,i)=>(
+                    
+                    <li class="list-group-item d-flex justify-content-between lh-sm">
+                        {/* {console.log(item)} */}
+                        <div>
+                        <h6 class="my-0">{cart.items[item].metaData.name}</h6>
+                        <small class="text-body-secondary">{cart.items[item].metaData.size}</small>
+                        </div>
+                        <span class="text-body-secondary">${cart.items[item].metaData.price}</span>
+                    </li>
+                ))}
+               
+                {/* <li class="list-group-item d-flex justify-content-between lh-sm">
                     <div>
                     <h6 class="my-0">Fresh grapes</h6>
                     <small class="text-body-secondary">Brief description</small>
@@ -400,14 +421,14 @@ const Header = () => {
                     <small class="text-body-secondary">Brief description</small>
                     </div>
                     <span class="text-body-secondary">$5</span>
-                </li>
+                </li> */}
                 <li class="list-group-item d-flex justify-content-between">
                     <span>Total (USD)</span>
-                    <strong>$20</strong>
+                    <strong>${cartTotal}</strong>
                 </li>
                 </ul>
 
-                <button class="w-100 btn btn-primary btn-lg" type="submit" style={{ backgroundColor: '#0e0e0d' }}>Continue to Checkout</button>
+                <button class="w-100 btn btn-primary btn-lg" onClick={(e)=>{e.preventDefault() ; handleCartCheckOut();}} type="submit" style={{ backgroundColor: '#0e0e0d' }}>Continue to Checkout</button>
             </div>
             </div>
         </div>
@@ -429,7 +450,7 @@ const Header = () => {
                 <div class="google-btn">
                 {
                     <>
-                    {/* <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIj48cGF0aCBkPSJNMTcuNiA5LjJsLS4xLTEuOEg5djMuNGg0LjhDMTMuNiAxMiAxMyAxMyAxMiAxMy42djIuMmgzYTguOCA4LjggMCAwIDAgMi42LTYuNnoiIGZpbGw9IiM0Mjg1RjQiIGZpbGwtcnVsZT0ibm9uemVybyIvPjxwYXRoIGQ9Ik05IDE4YzIuNCAwIDQuNS0uOCA2LTIuMmwtMy0yLjJhNS40IDUuNCAwIDAgMS04LTIuOUgxVjEzYTkgOSAwIDAgMCA4IDV6IiBmaWxsPSIjMzRBODUzIiBmaWxsLXJ1bGU9Im5vbnplcm8iLz48cGF0aCBkPSJNNCAxMC43YTUuNCA1LjQgMCAwIDEgMC0zLjRWNUgxYTkgOSAwIDAgMCAwIDhsMy0yLjN6IiBmaWxsPSIjRkJCQzA1IiBmaWxsLXJ1bGU9Im5vbnplcm8iLz48cGF0aCBkPSJNOSAzLjZjMS4zIDAgMi41LjQgMy40IDEuM0wxNSAyLjNBOSA5IDAgMCAwIDEgNWwzIDIuNGE1LjQgNS40IDAgMCAxIDUtMy43eiIgZmlsbD0iI0VBNDMzNSIgZmlsbC1ydWxlPSJub256ZXJvIi8+PHBhdGggZD0iTTAgMGgxOHYxOEgweiIvPjwvZz48L3N2Zz4="></img> */}
+                   
                 <button type="button" class="login-with-google-btn" onClick={login}>
                     Sign in with Google
                 </button>
@@ -440,6 +461,7 @@ const Header = () => {
             </div>
             </form>
         </div>
+
         <div id="signin" className={loginFormState?'formshow':'formhide'} ref={loginRef}>
             <form onSubmit={Login}>
                 <button type="button" id="close-btn" onClick={LoginFormToggle}>×</button>
@@ -454,7 +476,7 @@ const Header = () => {
             <div class="google-btn">
                 {
                     <>
-                    {/* <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIj48cGF0aCBkPSJNMTcuNiA5LjJsLS4xLTEuOEg5djMuNGg0LjhDMTMuNiAxMiAxMyAxMyAxMiAxMy42djIuMmgzYTguOCA4LjggMCAwIDAgMi42LTYuNnoiIGZpbGw9IiM0Mjg1RjQiIGZpbGwtcnVsZT0ibm9uemVybyIvPjxwYXRoIGQ9Ik05IDE4YzIuNCAwIDQuNS0uOCA2LTIuMmwtMy0yLjJhNS40IDUuNCAwIDAgMS04LTIuOUgxVjEzYTkgOSAwIDAgMCA4IDV6IiBmaWxsPSIjMzRBODUzIiBmaWxsLXJ1bGU9Im5vbnplcm8iLz48cGF0aCBkPSJNNCAxMC43YTUuNCA1LjQgMCAwIDEgMC0zLjRWNUgxYTkgOSAwIDAgMCAwIDhsMy0yLjN6IiBmaWxsPSIjRkJCQzA1IiBmaWxsLXJ1bGU9Im5vbnplcm8iLz48cGF0aCBkPSJNOSAzLjZjMS4zIDAgMi41LjQgMy40IDEuM0wxNSAyLjNBOSA5IDAgMCAwIDEgNWwzIDIuNGE1LjQgNS40IDAgMCAxIDUtMy43eiIgZmlsbD0iI0VBNDMzNSIgZmlsbC1ydWxlPSJub256ZXJvIi8+PHBhdGggZD0iTTAgMGgxOHYxOEgweiIvPjwvZz48L3N2Zz4="></img> */}
+                   
                 <button type="button" class="login-with-google-btn" onClick={() => login()}>
                     Sign in with Google
                 </button>
@@ -474,8 +496,8 @@ const Header = () => {
         <div className="offcanvas__option">
             <div className="offcanvas__links">
            
-            <a href="#" onClick={RegisterFormToggle}>{authuser?(authuser.name):'Sign up'}</a>
-            <a href="#" onClick={LoginFormToggle}>Sign in</a>
+            <a href="#" onClick={(e) => { e.preventDefault(); RegisterFormToggle(); }}>{authuser?(authuser.name):'Sign up'}</a>
+            <a href="#" onClick={(e) => { e.preventDefault(); LoginFormToggle(); }}>Sign in</a>
             <a href="#" hidden={displaynameState}>{authuser?(authuser.displayName):''}</a>
             <a href="#">Logout</a>
             </div>
@@ -518,13 +540,14 @@ const Header = () => {
                     {
                     (!authuser) && (
                         <>
-                        <a href="#" onClick={RegisterFormToggle} >Sign up</a>
-                        <a href="#" onClick={LoginFormToggle} >Sign in</a>
+                        <a href="#" onClick={(e) => { e.preventDefault(); RegisterFormToggle(); }} >Sign up</a>
+                        <a href="#" onClick={(e) => { e.preventDefault(); LoginFormToggle(); }} >Sign in</a>
                         </>
                     )
                     }
                     
                     <Link to="/admin">Admin Area</Link>
+                    {/* <Link to="/modal">Modla</Link> */}
                     {/* <a href="#" hidden={displaynameState}>{user.displayName}</a> */}
                     {
                         authuser && (
@@ -588,7 +611,7 @@ const Header = () => {
                 {/* <a href="#"><img src="/assets/img/icon/cart.png" alt="" /> <span>0</span></a> */}
                 {/* <li class="d-none d-lg-block"> */}
                 
-                <a href="index.html" class="text-uppercase mx-3" data-bs-toggle="offcanvas" data-bs-target="#offcanvasCart" aria-controls="offcanvasCart">cart (63)
+                <a href="index.html" class="text-uppercase mx-3" data-bs-toggle="offcanvas" data-bs-target="#offcanvasCart" aria-controls="offcanvasCart">cart ({Object.keys(cart.items).length})
                 </a>
                 {/* </li> */}
                 {/* <div className="price">$0.00</div> */}

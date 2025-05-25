@@ -1,5 +1,5 @@
 import React from 'react';
-import { useState , useRef , useEffect } from 'react';
+import { useState  , useEffect } from 'react';
 import axios from 'axios';
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -7,7 +7,7 @@ import useScript from "../../Hooks/jsLoader";
 import Layout from "../../Layouts/User/Layout";
 import { useParams } from "react-router-dom";
 import { useNavigate, useLocation } from "react-router-dom"; // if you're using react-router-dom v6
-import { useDispatch } from "react-redux";
+// import { useDispatch } from "react-redux";
 import { reduxAddToCart } from '../../redux/cartSlice';
 import { useSelector } from "react-redux";
 
@@ -30,10 +30,10 @@ const Store = () =>{
 
     const cart = useSelector((state) => state.cart);
     console.log(cart);
-    // useEffect(()=>{
-    //     console.log(itemsInCart);
-    //     console.log(cart);
-    // },[cart])
+    useEffect(()=>{
+        console.log(itemsInCart);
+        console.log(cart);
+    },[cart])
     const toggleProductSizeActiveClass = (proID , proName, sizeID ,size ,price)=> {
         // alert(proID);
         // alert(sizeID);
@@ -137,8 +137,8 @@ const Store = () =>{
      
     }
     const authuser = useSelector((state) => state.auth.user);
-    console.log("category Page user",authuser);
-    const dispatch = useDispatch();
+    // console.log("category Page user",authuser);
+    // const dispatch = useDispatch();
     const addToCart= async(itemId)=>{
         try{
         const productData = {
@@ -207,7 +207,7 @@ const Store = () =>{
 
         setModalShow(false);
        
-        dispatch(reduxAddToCart({ itemData,authuser }));
+        // dispatch(reduxAddToCart({ itemData,authuser }));
         }catch(err){
 
         }
@@ -401,19 +401,19 @@ const Store = () =>{
     const location = useLocation();
     
     //set filters states from url when reloadede
-    // useEffect(() => {
-    //     const searchParams = new URLSearchParams(location.search);
-    //     const brandsFromUrl = searchParams.get('brands')?.split(',') || [];
-    //     const colorsFromUrl = searchParams.get('colors')?.split(',') || [];
-    //     const sizesFromUrl = searchParams.get('sizes')?.split(',') || [];
-    //     const pricesFromUrl = searchParams.get('prices')?.split(',') || [];
+    useEffect(() => {
+        const searchParams = new URLSearchParams(location.search);
+        const brandsFromUrl = searchParams.get('brands')?.split(',') || [];
+        const colorsFromUrl = searchParams.get('colors')?.split(',') || [];
+        const sizesFromUrl = searchParams.get('sizes')?.split(',') || [];
+        const pricesFromUrl = searchParams.get('prices')?.split(',') || [];
       
-    //     if (brandsFromUrl.length) setfilterBrands(brandsFromUrl);
-    //     if (colorsFromUrl.length) setfilterColors(colorsFromUrl);
-    //     if (sizesFromUrl.length) setfilterSizes(sizesFromUrl);
-    //     if (pricesFromUrl.length) setfilterPrices(pricesFromUrl);
-    //     setFiltersReady(true); // ✅ only after setting all
-    // }, []); // <-- empty dependency array! runs only once
+        if (brandsFromUrl.length) setfilterBrands(brandsFromUrl);
+        if (colorsFromUrl.length) setfilterColors(colorsFromUrl);
+        if (sizesFromUrl.length) setfilterSizes(sizesFromUrl);
+        if (pricesFromUrl.length) setfilterPrices(pricesFromUrl);
+        setFiltersReady(true); // ✅ only after setting all
+    }, []); // <-- empty dependency array! runs only once
     
 
 
@@ -500,10 +500,12 @@ const Store = () =>{
 
                 const queryString = queryParams.toString();
                 if (filterBrands.length > 0 || filterPrices.length > 0 || filterSizes.length > 0 || filterColors.length > 0){
+                    // alert("has value");
                     navigate(`${location.pathname}?${queryString}`, { replace: true });
                 }
                 if (filterBrands.length == 0 && filterPrices.length == 0 && filterSizes.length == 0 && filterColors.length == 0){
                     navigate(`${location.pathname}`, { replace: true });
+                    //  alert("empty");
                 }
             
             }catch(err){
@@ -516,8 +518,11 @@ const Store = () =>{
 
     },[filtersReady,filterBrands,filterPrices,filterSizes,filterColors]);
 
-   
+    useEffect(()=>{
+         console.log(location)
 
+    },[location])
+  
 
     const pageChangefilterProducts= async(pageno)=>{
         // alert("pagechamged");
@@ -763,7 +768,7 @@ const Store = () =>{
                         </div>
                         </div>
                         <div className="row">
-                       
+                       {console.log("argha")}
                         { catProducts.map((elem)=>{
                             return(
                             <div key={elem._id} className="col-lg-4 col-md-6 col-sm-6">
@@ -781,13 +786,13 @@ const Store = () =>{
                                 </div>
                                 <div className="product__item__text">
                                     <h6 >{elem.name}</h6>
-                                    {/* {console.log(cart)} */}
-                                    {(Object.entries(cart.items).some(
+                                    
+                                    {/* {(Object.entries(cart.items).some(
                                              ([key, value]) => value.productId==elem._id
                                     ))?
-                                    <a href="#" onClick={(e) => {e.preventDefault();}} className="add-cart">Added To Cart</a>:
-                                    <a href="#" onClick={(e) => {e.preventDefault();setModalShow(true);setProducModalData(elem);}} className="add-cart">+ Add To Cart</a>
-                                    }
+                                    <a href="#opneprobox" className="add-cart">Added To Cart</a>:
+                                    <a href="#opneprobox" onClick={() => {setModalShow(true);setProducModalData(elem);}} className="add-cart">+ Add To Cart</a>
+                                    } */}
                                     {/* <a href="#opneprobox" onClick={() => {setModalShow(true);setProducModalData(elem);}} className="add-cart">+ Add To Cart</a> */}
                                     <div className="rating">
                                     <i className="fa fa-star-o" />
