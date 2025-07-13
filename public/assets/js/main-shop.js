@@ -51,10 +51,10 @@
     /*------------------
         Background Set
     --------------------*/
-    $('.set-bg').each(function () {
-        var bg = $(this).data('setbg');
-        $(this).css('background-image', 'url(' + bg + ')');
-    });
+    // $('.set-bg').each(function () {
+    //     var bg = $(this).data('setbg');
+    //     $(this).css('background-image', 'url(' + bg + ')');
+    // });
 
     //Search Switch
     $('.search-switch').on('click', function () {
@@ -183,7 +183,7 @@
     proQty.on('click', '.qtybtn', function () {
         var $button = $(this);
         var oldValue = $button.parent().find('input').val();
-        if ($button.hasClass('dec')) {
+        if ($button.hasClass('inc')) {
             var newVal = parseFloat(oldValue) + 1;
         } else {
             // Don't allow decrementing below zero

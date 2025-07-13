@@ -160,7 +160,7 @@ const ResetPassword = () => {
 
     }
   return (
-    <Layout>
+    // <Layout>
     <div className="overlay">
         {/* {alert(emailFormState)} */}
         <div className={emailFormState?'reset-box':'reset-box d-none'}>
@@ -208,7 +208,7 @@ const ResetPassword = () => {
             <button onClick={ResetPassword}>Reset Password</button>
         </div>
     </div>
-    </Layout>
+    // </Layout>
   );
 };
 

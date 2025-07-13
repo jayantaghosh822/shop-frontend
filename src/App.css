@@ -321,3 +321,8 @@ padding:5px;
       display: none;
   }
 }
+
+.product__details__cart__option.disabled {
+  pointer-events: none;   /* disables all interactions */
+  opacity: 0.5;           /* grays out */
+}

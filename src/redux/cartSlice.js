@@ -34,21 +34,56 @@ export const fetchCart = createAsyncThunk(
   }
 );
 
+
+function deepEqual(obj1, obj2) {
+  return Object.keys(obj1).length === Object.keys(obj2).length &&
+    Object.keys(obj1).every(key => obj1[key] === obj2[key]);
+}
+
+// const isEqual = deepEqual(metaData1, metaData2);
 // const authuser = useSelector((state) => state.auth.user);
 const cartSlice = createSlice({
   name: "items",
   initialState,
   reducers: {
     reduxAddToCart: (state, action) => {
-    console.log(state.items);
-    console.log(savedCart);
-    console.log('New item:', action.payload);
-    const items = action.payload.itemData;
-    const authuser =  action.payload.authuser;
-    // const ifSizeExists = Object.entries(sizesChosenForProducts).some(
-    //   ([key, value]) => key==proID && value.sizeId == sizeID
-    // );
-    state.items = {...state.items,...items};
+
+      const newItem = action.payload.itemData; // { temp_key: { productId, metaData } }
+      const authuser = action.payload.authuser;
+      const firstKey = Object.keys(newItem)[0]; 
+      const { productId, metaData } = newItem[firstKey];
+
+      // Check if the same product + size already exists in cart
+      let found = false;
+
+      for (const key in state.items) {
+        const item = state.items[key];
+
+        if (
+          item.productId === productId &&
+          deepEqual(item.metaData, metaData)
+        ) {
+          // If same productId and same metaData (e.g., size, price), increase quantity
+          const currentQuantity = item.quan || 0;
+
+          state.items[key] = {
+            ...item,
+            quan: currentQuantity + 1
+          };
+
+          found = true;
+          break;
+        }
+      }
+
+      if (!found) {
+        // Add as a new entry if not present
+        state.items = {
+          ...state.items,
+          ...newItem
+        };
+      }
+  // const authuser = null;
     if(authuser){
       localStorage.setItem("savedCartItems", JSON.stringify(state.items));
     }else{

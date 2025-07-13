@@ -315,7 +315,7 @@ const Header = () => {
         .then(res=>{
             alert("logging out ");
             dispatch(logout());
-            // dispatch(cleanCart());
+            dispatch(cleanCart());
         })
         
         // setProfile(null);
@@ -380,6 +380,8 @@ const Header = () => {
         
     }
 
+    const [verifyEmailMessage , setVerifyEmailMessage] = useState(false);
+
   return (
    
     <div>
@@ -403,6 +405,7 @@ const Header = () => {
                         <div>
                         <h6 class="my-0">{cart.items[item].metaData.name}</h6>
                         <small class="text-body-secondary">{cart.items[item].metaData.size}</small>
+                        {/* <small class="text-body-secondary"> quan:{cart.items[item].quantity}</small> */}
                         </div>
                         <span class="text-body-secondary">${cart.items[item].metaData.price}</span>
                     </li>
@@ -470,7 +473,16 @@ const Header = () => {
                 <label>Your Password</label>
                     <input name="userPassword" value={LoginformData.userPassword} onChange={handleLoginFormChange} type="password" />
                 <Link to="/password-reset">forgot password?</Link>
-               
+                {verifyEmailMessage && (
+                    <>
+                    <div>
+                    Email Verification Incomplete
+                    </div>
+                    <input type="submit" className="primary-btn" value="Verify Email" />
+                    </>
+                    
+                )}
+                
                 <input type="submit" className="primary-btn" value="Login" />
             </form>
             <div class="google-btn">

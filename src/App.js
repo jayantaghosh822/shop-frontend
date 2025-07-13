@@ -23,9 +23,12 @@ import Layout from './Layouts/User/Layout';
 import AdminLayout from './Layouts/Admin/AdminLayout';
 import MyModal from './Pages/User/ModalTest';
 import ErrorPage from './Components/Pages/404.js';
+import Product from './Pages/User/Product.js';
 // import { reduxAddToCart } from './redux/cartSlice';
 // Import jQuery if using it (since React doesn't include it by default)
 // import $ from "jquery";
+import Cart from './Pages/User/Cart.js';
+import EmailVerificationConfirmed from './Pages/User/EmailVerified.js';
 
 const App = () => {
   const dispatch = useDispatch();
@@ -64,9 +67,11 @@ const App = () => {
             <Route index element={<ResetPassword />} />
             <Route path=":userID/:token" element={<ResetPassword />} />
           </Route>
+          <Route path="verify-email/:token" element={<EmailVerificationConfirmed />} />
           <Route path="store" element={<Store />} />
           <Route path=":category/:subcategory" element={<Store />} />
-
+          <Route path="p/:p" element={<Product />} />
+          <Route path="cart" element={<Cart />} />
           <Route path="*" element={<ErrorPage />} />
         </Route>
 

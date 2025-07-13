@@ -5,7 +5,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import useScript from "../../Hooks/jsLoader";
 import Layout from "../../Layouts/User/Layout";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { useNavigate, useLocation } from "react-router-dom"; // if you're using react-router-dom v6
 import { useDispatch } from "react-redux";
 import { reduxAddToCart } from '../../redux/cartSlice';
@@ -208,17 +208,34 @@ const Store = () =>{
         setModalShow(false);
        
         dispatch(reduxAddToCart({ itemData,authuser }));
+        toast.success('Product Added To Cart', {
+                position: "top-right",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+        });
         }catch(err){
-
+            toast.error('Something Went Wrong', {
+                position: "top-right",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+            });
         }
        
         
         
     }
 
-    useScript([
-        "/assets/js/main.js",
-    ]);
+    // useScript([
+    //     "/assets/js/main.js",
+    // ]);
     const [modalShow, setModalShow] = useState(true);
 
     //set products and filterLists
@@ -400,20 +417,7 @@ const Store = () =>{
     const navigate = useNavigate();
     const location = useLocation();
     
-    //set filters states from url when reloadede
-    // useEffect(() => {
-    //     const searchParams = new URLSearchParams(location.search);
-    //     const brandsFromUrl = searchParams.get('brands')?.split(',') || [];
-    //     const colorsFromUrl = searchParams.get('colors')?.split(',') || [];
-    //     const sizesFromUrl = searchParams.get('sizes')?.split(',') || [];
-    //     const pricesFromUrl = searchParams.get('prices')?.split(',') || [];
-      
-    //     if (brandsFromUrl.length) setfilterBrands(brandsFromUrl);
-    //     if (colorsFromUrl.length) setfilterColors(colorsFromUrl);
-    //     if (sizesFromUrl.length) setfilterSizes(sizesFromUrl);
-    //     if (pricesFromUrl.length) setfilterPrices(pricesFromUrl);
-    //     setFiltersReady(true); // ✅ only after setting all
-    // }, []); // <-- empty dependency array! runs only once
+    
     
 
 
@@ -505,6 +509,22 @@ const Store = () =>{
                 if (filterBrands.length == 0 && filterPrices.length == 0 && filterSizes.length == 0 && filterColors.length == 0){
                     navigate(`${location.pathname}`, { replace: true });
                 }
+
+                
+
+                const script = document.createElement("script");
+                const src = '/assets/js/main-shop.js';
+                script.src = src;
+                script.async = true;
+                script.onload = () => {
+                    console.log(`${src} loaded.`);
+                    if (window.jQuery) {
+                    window.$ = window.jQuery; // Ensure jQuery is globally available
+                    }
+                    // if (onLoadCallback) onLoadCallback();
+                };
+                script.onerror = () => console.error(`Error loading ${src}`);
+                document.body.appendChild(script);
             
             }catch(err){
                 // console.log('brands',err);
@@ -591,7 +611,17 @@ const Store = () =>{
 
 
     const [producModalData , setProducModalData] = useState({});
+
+    const[count , setCount] = useState(0);
     
+    // const [addToCart , setAddToCart] = useState(false);
+    
+    console.log('tets');
+
+    
+    const incCount = ()=>{
+        setCount(count+1);
+    }
     return(
         <>
        {MyLoader()}
@@ -600,7 +630,7 @@ const Store = () =>{
 {/* {console.log(itemsInCart)} */}
             <div >
                 {/* Breadcrumb Section Begin */}
-                <section className="breadcrumb-option">
+                <section className="breadcrumb-option" onClick={incCount}>
                 <div className="container">
                     <div className="row">
                     <div className="col-lg-12">
@@ -766,19 +796,28 @@ const Store = () =>{
                        
                         { catProducts.map((elem)=>{
                             return(
+                            
                             <div key={elem._id} className="col-lg-4 col-md-6 col-sm-6">
                                 <div className="product__item">
-                                <div className="product__item__pic set-bg" data-setbg={elem.images.mainImage}>
-                                    <ul className="product__hover">
-                                    <li><a href="#"><img src="/assets/img/icon/heart.png" alt="" /></a></li>
-                                    {/* <li><a href="#"><img src="/assets/img/icon/compare.png" alt="" /> <span>Compare</span></a>
-                                    </li>
-                                    <li><a href="#"><img src="/assets/img/icon/search.png" alt="" /></a>
-                                    </li> */}
+                                <Link to = {`/p/${elem.id}`}>
+                                    <div
+                                        className="product__item__pic set-bg"
+                                        style={{ backgroundImage: `url(${elem.images.mainImage})` }}
+                                        >
+                                        <ul className="product__hover">
+                                            <li>
+                                            <img alt="" src="/assets/img/icon/heart.png" />
+                                            </li>
+                                        </ul>
+                                    </div>
 
-                               
+                                {/* <div class="product__item__pic set-bg" data-setbg={elem.images.mainImage}>
+                                    <ul class="product__hover">
+                                        <li><img alt="" src="/assets/img/icon/heart.png" />
+                                        </li>
                                     </ul>
-                                </div>
+                                </div> */}
+                                </Link>
                                 <div className="product__item__text">
                                     <h6 >{elem.name}</h6>
                                     {/* {console.log(cart)} */}
@@ -811,6 +850,7 @@ const Store = () =>{
                                 </div>
                                 </div>
                             </div>
+                            // </Link>
                             );
                            
                         })}
