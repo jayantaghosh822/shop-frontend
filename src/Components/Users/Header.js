@@ -158,6 +158,11 @@ const Header = () => {
     // });
     const LoginFormToggle = () =>{
         showloginForm(prevState => !prevState); // Toggle between true/false
+    // const [verifyEmailMessage , setVerifyEmailMessage] = useState(false);
+    // const [verificationMailSent , setverificationMailSent] = useState(false);
+    // const [verifyMailButton , setVerifyMailButton] = useState(true);
+    setVerifyEmailMessage(false);
+    setVerifyMailButton(true);
         // document.getElementById('signin').style.display = 'none';
     }
 
@@ -177,6 +182,7 @@ const Header = () => {
         });
     }
     const dispatch = useDispatch();
+    const [verifyEmailUserId , setVerifyEmailUserId] = useState('');
     const Login = async (e)=>{
         // NotificationManager.success('Success message', 'Title here');
         e.preventDefault();
@@ -203,6 +209,7 @@ const Header = () => {
                     draggable: true,
                     progress: undefined,
                 });
+               
             }else{
                 toast.success(userLogin.data.message, {
                     position: "top-right",
@@ -226,6 +233,12 @@ const Header = () => {
                 dispatch(loginSuccess({ user: userLogin.data.user }));
             }
         }catch(err){
+            if(err.response.data.error=='email not verified'){
+                setVerifyEmailMessage(true);
+                setVerifyEmailUserId(err.response.data.userId);
+                return;
+            }
+           
             toast.error(err.response.data.error, {
                 position: "top-right",
                 autoClose: 3000,
@@ -381,7 +394,48 @@ const Header = () => {
     }
 
     const [verifyEmailMessage , setVerifyEmailMessage] = useState(false);
-
+    const [verificationMailSent , setverificationMailSent] = useState(false);
+    const [verifyMailButton , setVerifyMailButton] = useState(true);
+    const sendTokenOnMail = async()=>{
+        // verifyEmailUserId
+        try{
+        const backendUrl = process.env.REACT_APP_BACKEND_URL;
+        setverificationMailSent(true);
+        setVerifyMailButton(false);
+        const sendEmail =  await axios.get(`${backendUrl}/api/user/send-verification-email/`, {
+                            params: {
+                                userID: verifyEmailUserId,
+                               
+                            },
+                            withCredentials: true,
+                        });
+        console.log(sendEmail);
+        toast.success(sendEmail.data.message, {
+            position: "top-right",
+            autoClose: 3000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+        });
+        setverificationMailSent(false);
+        setVerifyMailButton(true);
+        }catch(err){
+            setverificationMailSent(false);
+            setVerifyMailButton(true);
+            toast.error('Something Went Wrong', {
+                position: "top-right",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+            });
+        }
+       
+    }
   return (
    
     <div>
@@ -473,15 +527,25 @@ const Header = () => {
                 <label>Your Password</label>
                     <input name="userPassword" value={LoginformData.userPassword} onChange={handleLoginFormChange} type="password" />
                 <Link to="/password-reset">forgot password?</Link>
+                {console.log("verifyEmailMessage",verifyEmailMessage)}
                 {verifyEmailMessage && (
                     <>
-                    <div>
-                    Email Verification Incomplete
-                    </div>
-                    <input type="submit" className="primary-btn" value="Verify Email" />
+                    <div style={{ color: 'red' }}>Email Verification Incomplete</div>
+                    
+                    <Link style={{
+                    pointerEvents: verifyMailButton ? 'auto' : 'none',
+                    color: verifyMailButton ? 'blue' : 'gray',
+                    }} href="#" onClick={(e)=>{sendTokenOnMail()}}>Verify Email</Link>
+                    
                     </>
                     
                 )}
+                {verificationMailSent && (
+                    <>
+                    <img height="50" width="50" src="https://res.cloudinary.com/bytesizedpieces/image/upload/v1656084931/article/a-how-to-guide-on-making-an-animated-loading-image-for-a-website/animated_loader_gif_n6b5x0.gif"></img>
+                    </>
+                )}
+                
                 
                 <input type="submit" className="primary-btn" value="Login" />
             </form>
