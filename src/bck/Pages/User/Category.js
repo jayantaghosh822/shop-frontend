@@ -10,7 +10,7 @@ import { useNavigate, useLocation } from "react-router-dom"; // if you're using 
 import { useDispatch } from "react-redux";
 import { reduxAddToCart } from '../../redux/cartSlice';
 import { useSelector } from "react-redux";
-import { fetchCart,cleanCart } from '../../redux/cartSlice';
+
 import { CSSProperties } from "react";
 import { ClipLoader } from "react-spinners";
 import Button from 'react-bootstrap/Button';
@@ -78,7 +78,7 @@ const Store = () =>{
     //     return true;
     // }
     const MyVerticallyCenteredModal =(props)=>{
-        console.log(props);
+        // console.log(props);
         let disabled = true;
         
         if(props.productData.name){
@@ -127,7 +127,7 @@ const Store = () =>{
                     <button disabled={disabled} class="w-100 btn btn-primary btn-lg" onClick={(e) => {
                                                         e.preventDefault();
                                                         // alert('test');
-                                                        addToCart(props.productData);
+                                                        addToCart(props.productData._id);
                     }} type="submit" style={{ backgroundColor: '#0e0e0d' }}>Add To Cart</button>
 
                   </Modal.Footer>
@@ -139,25 +139,18 @@ const Store = () =>{
     const authuser = useSelector((state) => state.auth.user);
     console.log("category Page user",authuser);
     const dispatch = useDispatch();
-    const addToCart= async(item)=>{
+    const addToCart= async(itemId)=>{
         try{
-        console.log(item);
-        const itemId = item._id;
         const productData = {
             'product': itemId,
             'metaData':{
                 'name': sizesChosenForProducts[itemId].name,
                 'size': sizesChosenForProducts[itemId].size,
-                'sizeId':sizesChosenForProducts[itemId].sizeId,
-
+                'price': sizesChosenForProducts[itemId].price
             },
-            'price': sizesChosenForProducts[itemId].price,
-            'image':item.images.mainImage,
             'quan':1
             
         };
-
-       
         let itemData = {};
         if(authuser){
             const backendUrl = process.env.REACT_APP_BACKEND_URL;
@@ -175,48 +168,37 @@ const Store = () =>{
                 draggable: true,
                 progress: undefined,
             });
-            dispatch(fetchCart());
-            // console.log(itemData);
-            // setItemsInCart(prev=>{
-            //     return{
-            //         ...prev,
-            //         ...itemData
-            //     }
-            // });
+            itemData = {
+                [addToCart.data.itemSaved._id] :{
+                    'productId':addToCart.data.itemSaved.product,
+                    'metaData':addToCart.data.itemSaved.metaData
+                }
+            }
+            console.log(itemData);
+            setItemsInCart(prev=>{
+                return{
+                    ...prev,
+                    ...itemData
+                }
+            });
         }else{
-            console.log(sizesChosenForProducts);
-            console.log(sizesChosenForProducts.itemId);
             const tempId = `temp_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
             itemData = {
-                    'product': itemId,
+                [tempId]:{
+                    'productId':itemId,
                     'metaData':{
                         'name': sizesChosenForProducts[itemId].name,
                         'size': sizesChosenForProducts[itemId].size,
-                        'sizeId':sizesChosenForProducts[itemId].sizeId
-                    },
-                    'price': sizesChosenForProducts[itemId].price,
-                    'image':item.images.mainImage,
-                    'quan':1
-                
+                        'price': sizesChosenForProducts[itemId].price
+                    }
+                }
             }
-            console.log(itemData);
-            dispatch(reduxAddToCart({ itemData,authuser }));
-            toast.success('Product Added To Cart', {
-                    position: "top-right",
-                    autoClose: 3000,
-                    hideProgressBar: false,
-                    closeOnClick: true,
-                    pauseOnHover: true,
-                    draggable: true,
-                    progress: undefined,
+            setItemsInCart(prev=>{
+                return{
+                    ...prev,
+                    ...itemData
+                }
             });
-            // return;
-            // setItemsInCart(prev=>{
-            //     return{
-            //         ...prev,
-            //         ...itemData
-            //     }
-            // });
         }
 
         
@@ -225,9 +207,17 @@ const Store = () =>{
 
         setModalShow(false);
        
-        
+        dispatch(reduxAddToCart({ itemData,authuser }));
+        toast.success('Product Added To Cart', {
+                position: "top-right",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+        });
         }catch(err){
-            console.log(err);
             toast.error('Something Went Wrong', {
                 position: "top-right",
                 autoClose: 3000,

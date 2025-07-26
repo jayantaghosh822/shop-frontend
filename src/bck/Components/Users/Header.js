@@ -158,12 +158,12 @@ const Header = () => {
     // });
     const LoginFormToggle = () =>{
         showloginForm(prevState => !prevState); // Toggle between true/false
-        // const [verifyEmailMessage , setVerifyEmailMessage] = useState(false);
-        // const [verificationMailSent , setverificationMailSent] = useState(false);
-        // const [verifyMailButton , setVerifyMailButton] = useState(true);
-        setVerifyEmailMessage(false);
-        setVerifyMailButton(true);
-            // document.getElementById('signin').style.display = 'none';
+    // const [verifyEmailMessage , setVerifyEmailMessage] = useState(false);
+    // const [verificationMailSent , setverificationMailSent] = useState(false);
+    // const [verifyMailButton , setVerifyMailButton] = useState(true);
+    setVerifyEmailMessage(false);
+    setVerifyMailButton(true);
+        // document.getElementById('signin').style.display = 'none';
     }
 
     const [LoginformData, setLoginFormData] = useState({
@@ -337,13 +337,9 @@ const Header = () => {
     // const [cartArr , setCartArr] = useState([]);
     const cart = useSelector((state) => state.cart);
     let cartTotal = 0;
-    console.log(cart);
-    if (Array.isArray(cart.items) && cart.items.length > 0) {
-        (cart.items).map((item , index)=>{
-            cartTotal = cartTotal + item.price;
-        })
-    }
-    
+    Object.keys(cart.items).map((key , index)=>{
+        cartTotal = cartTotal + cart.items[key].metaData.price;
+    })
 
     console.log(cartTotal);
     
@@ -377,14 +373,15 @@ const Header = () => {
             // dispatch(fetchCart());
         }
     }, [dispatch, authuser])
-    const loginFormPopup = useSelector((state) => state.auth.showLoginForm);
-    useEffect(()=>{
-       console.log(loginFormPopup);
-       if(loginFormPopup){
-        showloginForm(true); 
-       }
-        
-    },[loginFormPopup])
+
+    // useEffect(()=>{
+    //     const itemArray = Object.entries(cart.items).map(([id, item]) => ({
+    //         id,
+    //         ...item
+    //     }));
+    //     console.log(cart);
+    //     console.log(itemArray);
+    // },[cart])
 
     // const [cartSidebar , setCartSidebar] = useState(false);
 
@@ -454,22 +451,22 @@ const Header = () => {
                 <span class="" style={{ color: '#0e0e0d' }}>({Object.keys(cart.items).length})</span>
                 </h4>
                 <ul class="list-group mb-3">
-                    {console.log(cart)}
-                {cart && Array.isArray(cart.items) && cart.items.length>0 && cart.items.map((item,i)=>(
+                    {/* {cart && cart.} */}
+                {Object.keys(cart.items).map((item,i)=>(
                     
                     <li key={i} className="list-group-item d-flex justify-content-between lh-sm align-items-center">
                         <div className="d-flex align-items-center">
                             <img
-                                src={`${item.image}`} // <- Ensure you have `image` in your cart item's metaData
+                                src={`https://cdn.bigboytoyz.com/new-version/products/whatsapp-image-2024-02-13-at-20.32.51.jpeg`} // <- Ensure you have `image` in your cart item's metaData
                                 
                                 style={{ width: '60px', height: '60px', objectFit: 'cover', marginRight: '10px', borderRadius: '8px' }}
                             />
                             <div>
-                                <h6 className="my-0">{item.metaData?.name}</h6>
-                                <small className="text-body-secondary">{item.metaData?.size} x {item.quan}</small>
+                                <h6 className="my-0">{cart.items[item].metaData.name}</h6>
+                                <small className="text-body-secondary">{cart.items[item].metaData.size}</small>
                             </div>
                         </div>
-                        <span className="text-body-secondary">${item.price}</span>
+                        <span className="text-body-secondary">${cart.items[item].metaData.price}</span>
                     </li>
                 ))}
                
@@ -493,7 +490,7 @@ const Header = () => {
                 </li>
                 </ul>
 
-               <button class="w-100 btn btn-primary btn-lg" onClick={(e)=>{e.preventDefault() ; handleCartCheckOut();}} type="submit" style={{ backgroundColor: '#0e0e0d' }}> <Link to="/cart">Go To Cart</Link></button>
+                <button class="w-100 btn btn-primary btn-lg" onClick={(e)=>{e.preventDefault() ; handleCartCheckOut();}} type="submit" style={{ backgroundColor: '#0e0e0d' }}>Continue to Checkout</button>
             </div>
             </div>
         </div>
@@ -620,7 +617,7 @@ const Header = () => {
                 <div className="header__top__right">
                     <div className="header__top__links">
                     <a href="#" >{authuser?(authuser.name):''}</a>
-                    {/* {console.log(authuser)} */}
+                    {console.log(authuser)}
                     {
                     (!authuser) && (
                         <>

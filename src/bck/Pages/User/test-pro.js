@@ -4,7 +4,7 @@ import axios from "axios";
 import { Link } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { fetchCart,cleanCart } from '../../redux/cartSlice';
+
 import { useParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { reduxAddToCart } from '../../redux/cartSlice';
@@ -18,9 +18,6 @@ const Product = () =>{
     const params = useParams();
     const calculatePriceRange = ()=>{
         console.log(selectedSize);
-        if(selectedSize?.price){
-             return `$${selectedSize.price}`;
-        }
         const priceArr = sizes.map((size,index)=>{
             return size.price;
         })
@@ -59,15 +56,6 @@ const Product = () =>{
     console.log("category Page user",authuser);
     const dispatch = useDispatch();
     const addToCart= async()=>{
-        // toast.success('tets', {
-        //         position: "top-right",
-        //         autoClose: 3000,
-        //         hideProgressBar: false,
-        //         closeOnClick: true,
-        //         pauseOnHover: true,
-        //         draggable: true,
-        //         progress: undefined,
-        //     });
         console.log(selectedSize);
         try{
         if(!params.p || !product.name || !selectedSize.size || !selectedSize.price){
@@ -79,9 +67,8 @@ const Product = () =>{
             'metaData':{
                 'name': product.name,
                 'size': selectedSize.size,
-                'sizeId':selectedSize._id
+                'price': selectedSize.price,
             },
-            'price': selectedSize.price,
             'quan':1
             
         };
@@ -102,51 +89,36 @@ const Product = () =>{
                 draggable: true,
                 progress: undefined,
             });
-            dispatch(fetchCart());
-            // itemData = {
-            //     'product': params.p,
-            //     'metaData':{
-            //         'name': product.name,
-            //         'size': selectedSize.size,
-            //         'sizeId':selectedSize._id
-            //     },
-            //     'price': selectedSize.price,
-            //     'quan':1
-            // }
-            // console.log(itemData);
-            // setItemsInCart(prev=>{
-            //     return{
-            //         ...prev,
-            //         ...itemData
-            //     }
-            // });
+            itemData = {
+                [addToCart.data.itemSaved._id] :{
+                    'productId':addToCart.data.itemSaved.product,
+                    'metaData':addToCart.data.itemSaved.metaData
+                }
+            }
+            console.log(itemData);
+            setItemsInCart(prev=>{
+                return{
+                    ...prev,
+                    ...itemData
+                }
+            });
         }else{
             const tempId = `temp_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
             itemData = {
-                'product': params.p,
-                'metaData':{
-                    'name': product.name,
-                    'size': selectedSize.size,
-                    'sizeId':selectedSize._id
-                },
-                'price': selectedSize.price,
-                'quan':1
+                [tempId]:{
+                    'productId':params.p,
+                    'metaData':{
+                        'name': product.name,
+                        'size': selectedSize.size,
+                        'price': selectedSize.price,
+                    }
+                }
             }
-            // setItemsInCart(prev=>{
-            //     return{
-            //         ...prev,
-            //         ...itemData
-            //     }
-            // });
-            dispatch(reduxAddToCart({ itemData,authuser }));
-            toast.success('Product Added To Cart', {
-                position: "top-right",
-                autoClose: 3000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
+            setItemsInCart(prev=>{
+                return{
+                    ...prev,
+                    ...itemData
+                }
             });
         }
 
@@ -156,17 +128,9 @@ const Product = () =>{
 
         // setModalShow(false);
        
-
+        dispatch(reduxAddToCart({ itemData,authuser }));
         }catch(err){
-            toast.error('Something Went Wrong', {
-                position: "top-right",
-                autoClose: 3000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-            });
+
         }
        
         
@@ -227,7 +191,47 @@ const Product = () =>{
                             )
                         })}
                        
-                       
+                        {/* <li className="nav-item">
+                            <a
+                            className="nav-link"
+                            data-toggle="tab"
+                            href="#tabs-2"
+                            role="tab"
+                            >
+                            <div
+                                className="product__thumb__pic set-bg"
+                                data-setbg="img/shop-details/thumb-2.png"
+                            ></div>
+                            </a>
+                        </li>
+                        <li className="nav-item">
+                            <a
+                            className="nav-link"
+                            data-toggle="tab"
+                            href="#tabs-3"
+                            role="tab"
+                            >
+                            <div
+                                className="product__thumb__pic set-bg"
+                                data-setbg="img/shop-details/thumb-3.png"
+                            ></div>
+                            </a>
+                        </li>
+                        <li className="nav-item">
+                            <a
+                            className="nav-link"
+                            data-toggle="tab"
+                            href="#tabs-4"
+                            role="tab"
+                            >
+                            <div
+                                className="product__thumb__pic set-bg"
+                                data-setbg="img/shop-details/thumb-4.png"
+                            >
+                                <i className="fa fa-play" />
+                            </div>
+                            </a>
+                        </li> */}
                         </ul>
                     </div>
                     <div className="col-lg-6 col-md-9">
@@ -242,7 +246,27 @@ const Product = () =>{
                             );
                         
                         })}
-                        
+                        {/* <div className="tab-pane" id="tabs-2" role="tabpanel">
+                            <div className="product__details__pic__item">
+                            <img src="img/shop-details/product-big-3.png" alt="" />
+                            </div>
+                        </div>
+                        <div className="tab-pane" id="tabs-3" role="tabpanel">
+                            <div className="product__details__pic__item">
+                            <img src="img/shop-details/product-big.png" alt="" />
+                            </div>
+                        </div>
+                        <div className="tab-pane" id="tabs-4" role="tabpanel">
+                            <div className="product__details__pic__item">
+                            <img src="img/shop-details/product-big-4.png" alt="" />
+                            <a
+                                href="https://www.youtube.com/watch?v=8PJ3_p7VqHw&list=RD8PJ3_p7VqHw&start_radio=1"
+                                className="video-popup"
+                            >
+                                <i className="fa fa-play" />
+                            </a>
+                            </div>
+                        </div> */}
                         </div>
                     </div>
                     </div>
@@ -276,9 +300,9 @@ const Product = () =>{
                             <div className="product__details__option__size">
                                 <span>Size:</span>
                                 {sizes.map((size, index) => (
-                                <label key={index} htmlFor={`size-${index}`} onClick={(e)=>{setSelectedSize(size) }} class={size==selectedSize?'active':''}>
+                                <label key={index} htmlFor={`size-${index}`} onClick={(e)=>{setSelectedSize(Math.random()) }} class={size==selectedSize?'active':''}>
                                     {size.size}
-                                    {/* <input type="radio" id={`size-${index}`} name="product-size" /> */}
+                                    <input type="radio" id={`size-${index}`} name="product-size" />
                                 </label>
                                 ))}
                             </div>
@@ -288,8 +312,12 @@ const Product = () =>{
                         </div>
                         {/* {console} */}
                         <div className={`product__details__cart__option ${Object.keys(selectedSize).length > 0 ? '' : 'disabled'}`}>
-                            
-                            <a href="" className="primary-btn" onClick={(e)=>{e.preventDefault(); addToCart()}}>
+                            <div className="quantity">
+                            <div className="pro-qty">
+                                <input type="text" defaultValue={1} />
+                            </div>
+                            </div>
+                            <a href="#" className="primary-btn" onClick={(e)=>{e.preventDefault(); addToCart()}}>
                             add to cart
                             </a>
                         </div>

@@ -158,12 +158,7 @@ const Header = () => {
     // });
     const LoginFormToggle = () =>{
         showloginForm(prevState => !prevState); // Toggle between true/false
-        // const [verifyEmailMessage , setVerifyEmailMessage] = useState(false);
-        // const [verificationMailSent , setverificationMailSent] = useState(false);
-        // const [verifyMailButton , setVerifyMailButton] = useState(true);
-        setVerifyEmailMessage(false);
-        setVerifyMailButton(true);
-            // document.getElementById('signin').style.display = 'none';
+        // document.getElementById('signin').style.display = 'none';
     }
 
     const [LoginformData, setLoginFormData] = useState({
@@ -182,7 +177,6 @@ const Header = () => {
         });
     }
     const dispatch = useDispatch();
-    const [verifyEmailUserId , setVerifyEmailUserId] = useState('');
     const Login = async (e)=>{
         // NotificationManager.success('Success message', 'Title here');
         e.preventDefault();
@@ -209,7 +203,6 @@ const Header = () => {
                     draggable: true,
                     progress: undefined,
                 });
-               
             }else{
                 toast.success(userLogin.data.message, {
                     position: "top-right",
@@ -233,12 +226,6 @@ const Header = () => {
                 dispatch(loginSuccess({ user: userLogin.data.user }));
             }
         }catch(err){
-            if(err.response.data.error=='email not verified'){
-                setVerifyEmailMessage(true);
-                setVerifyEmailUserId(err.response.data.userId);
-                return;
-            }
-           
             toast.error(err.response.data.error, {
                 position: "top-right",
                 autoClose: 3000,
@@ -288,8 +275,8 @@ const Header = () => {
                         try{
                         const userLoginByGoogle = await axios.post(backendUrl+'/api/user/auth-google', userDetails , { withCredentials: true });
                         // console.log(userLoginByGoogle.data.user);
-                        showregisterForm(false);
-                        showloginForm(false);
+                        // showregisterForm(prevState => !prevState);
+                        showloginForm(prevState => !prevState);
                        
                         dispatch(loginSuccess({ user: userLoginByGoogle.data.user }));
                         toast.success(userLoginByGoogle.data.message, {
@@ -336,16 +323,7 @@ const Header = () => {
 
     // const [cartArr , setCartArr] = useState([]);
     const cart = useSelector((state) => state.cart);
-    let cartTotal = 0;
-    console.log(cart);
-    if (Array.isArray(cart.items) && cart.items.length > 0) {
-        (cart.items).map((item , index)=>{
-            cartTotal = cartTotal + item.price;
-        })
-    }
-    
-
-    console.log(cartTotal);
+    // console.log(cart);
     
     // useEffect(() => {
     //     if (user.email) {
@@ -377,103 +355,39 @@ const Header = () => {
             // dispatch(fetchCart());
         }
     }, [dispatch, authuser])
-    const loginFormPopup = useSelector((state) => state.auth.showLoginForm);
-    useEffect(()=>{
-       console.log(loginFormPopup);
-       if(loginFormPopup){
-        showloginForm(true); 
-       }
-        
-    },[loginFormPopup])
 
-    // const [cartSidebar , setCartSidebar] = useState(false);
-
-    const handleCartCheckOut = ()=>{
-        if(!authuser){
-            showloginForm(true);
-            document.getElementById('cart-close').click();
-        }
-        
-    }
-
-    const [verifyEmailMessage , setVerifyEmailMessage] = useState(false);
-    const [verificationMailSent , setverificationMailSent] = useState(false);
-    const [verifyMailButton , setVerifyMailButton] = useState(true);
-    const sendTokenOnMail = async()=>{
-        // verifyEmailUserId
-        try{
-        const backendUrl = process.env.REACT_APP_BACKEND_URL;
-        setverificationMailSent(true);
-        setVerifyMailButton(false);
-        const sendEmail =  await axios.get(`${backendUrl}/api/user/send-verification-email/`, {
-                            params: {
-                                userID: verifyEmailUserId,
-                               
-                            },
-                            withCredentials: true,
-                        });
-        console.log(sendEmail);
-        toast.success(sendEmail.data.message, {
-            position: "top-right",
-            autoClose: 3000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-        });
-        setverificationMailSent(false);
-        setVerifyMailButton(true);
-        }catch(err){
-            setverificationMailSent(false);
-            setVerifyMailButton(true);
-            toast.error('Something Went Wrong', {
-                position: "top-right",
-                autoClose: 3000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-            });
-        }
-       
-    }
+    // useEffect(()=>{
+    //     const itemArray = Object.entries(cart.items).map(([id, item]) => ({
+    //         id,
+    //         ...item
+    //     }));
+    //     console.log(cart);
+    //     console.log(itemArray);
+    // },[cart])
   return (
    
     <div>
          <ToastContainer />
         <div class="offcanvas offcanvas-end" data-bs-scroll="true" tabindex="-1" id="offcanvasCart" aria-labelledby="My Cart">
             <div class="offcanvas-header justify-content-center">
-            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" id="cart-close" aria-label="Close"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
             </div>
             <div class="offcanvas-body">
             <div class="order-md-last">
                 <h4 class="d-flex justify-content-between align-items-center mb-3">
                 <span class="" style={{ color: '#0e0e0d' }}>Your cart</span>
-                <span class="" style={{ color: '#0e0e0d' }}>({Object.keys(cart.items).length})</span>
+                <span class="" style={{ color: '#0e0e0d' }}>(3)</span>
                 </h4>
                 <ul class="list-group mb-3">
-                    {console.log(cart)}
-                {cart && Array.isArray(cart.items) && cart.items.length>0 && cart.items.map((item,i)=>(
-                    
-                    <li key={i} className="list-group-item d-flex justify-content-between lh-sm align-items-center">
-                        <div className="d-flex align-items-center">
-                            <img
-                                src={`${item.image}`} // <- Ensure you have `image` in your cart item's metaData
-                                
-                                style={{ width: '60px', height: '60px', objectFit: 'cover', marginRight: '10px', borderRadius: '8px' }}
-                            />
-                            <div>
-                                <h6 className="my-0">{item.metaData?.name}</h6>
-                                <small className="text-body-secondary">{item.metaData?.size} x {item.quan}</small>
-                            </div>
-                        </div>
-                        <span className="text-body-secondary">${item.price}</span>
-                    </li>
-                ))}
-               
-                {/* <li class="list-group-item d-flex justify-content-between lh-sm">
+                    {/* {cart && cart.} */}
+                <li class="list-group-item d-flex justify-content-between lh-sm">
+                    <div>
+                    <h6 class="my-0">Growers cider</h6>
+                    <small class="text-body-secondary">Brief description</small>
+                    </div>
+                    <span class="text-body-secondary">$12</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between lh-sm">
                     <div>
                     <h6 class="my-0">Fresh grapes</h6>
                     <small class="text-body-secondary">Brief description</small>
@@ -486,14 +400,14 @@ const Header = () => {
                     <small class="text-body-secondary">Brief description</small>
                     </div>
                     <span class="text-body-secondary">$5</span>
-                </li> */}
+                </li>
                 <li class="list-group-item d-flex justify-content-between">
                     <span>Total (USD)</span>
-                    <strong>${cartTotal}</strong>
+                    <strong>$20</strong>
                 </li>
                 </ul>
 
-               <button class="w-100 btn btn-primary btn-lg" onClick={(e)=>{e.preventDefault() ; handleCartCheckOut();}} type="submit" style={{ backgroundColor: '#0e0e0d' }}> <Link to="/cart">Go To Cart</Link></button>
+                <button class="w-100 btn btn-primary btn-lg" type="submit" style={{ backgroundColor: '#0e0e0d' }}>Continue to Checkout</button>
             </div>
             </div>
         </div>
@@ -531,30 +445,11 @@ const Header = () => {
             <form onSubmit={Login}>
                 <button type="button" id="close-btn" onClick={LoginFormToggle}>×</button>
                 <label>Your Email</label>
-                    <input name="userEmail" value={LoginformData.userEmail} onChange={handleLoginFormChange} type="email" />
+                    <input name="userEmail" value={LoginformData.userEmail} onChange={handleLoginFormChange} type="" />
                 <label>Your Password</label>
-                    <input name="userPassword" value={LoginformData.userPassword} onChange={handleLoginFormChange} type="password" />
+                    <input name="userPassword" value={LoginformData.userPassword} onChange={handleLoginFormChange} type="" />
                 <Link to="/password-reset">forgot password?</Link>
-                {console.log("verifyEmailMessage",verifyEmailMessage)}
-                {verifyEmailMessage && (
-                    <>
-                    <div style={{ color: 'red' }}>Email Verification Incomplete</div>
-                    
-                    <Link style={{
-                    pointerEvents: verifyMailButton ? 'auto' : 'none',
-                    color: verifyMailButton ? 'blue' : 'gray',
-                    }} href="#" onClick={(e)=>{sendTokenOnMail()}}>Verify Email</Link>
-                    
-                    </>
-                    
-                )}
-                {verificationMailSent && (
-                    <>
-                    <img height="50" width="50" src="https://res.cloudinary.com/bytesizedpieces/image/upload/v1656084931/article/a-how-to-guide-on-making-an-animated-loading-image-for-a-website/animated_loader_gif_n6b5x0.gif"></img>
-                    </>
-                )}
-                
-                
+               
                 <input type="submit" className="primary-btn" value="Login" />
             </form>
             <div class="google-btn">
@@ -580,8 +475,8 @@ const Header = () => {
         <div className="offcanvas__option">
             <div className="offcanvas__links">
            
-            <a href="#" onClick={(e) => { e.preventDefault(); RegisterFormToggle(); }}>{authuser?(authuser.name):'Sign up'}</a>
-            <a href="#" onClick={(e) => { e.preventDefault(); LoginFormToggle(); }}>Sign in</a>
+            <a href="#" onClick={RegisterFormToggle}>{authuser?(authuser.name):'Sign up'}</a>
+            <a href="#" >Sign in</a>
             <a href="#" hidden={displaynameState}>{authuser?(authuser.displayName):''}</a>
             <a href="#">Logout</a>
             </div>
@@ -620,18 +515,18 @@ const Header = () => {
                 <div className="header__top__right">
                     <div className="header__top__links">
                     <a href="#" >{authuser?(authuser.name):''}</a>
-                    {/* {console.log(authuser)} */}
+                    {console.log(authuser)}
                     {
                     (!authuser) && (
                         <>
-                        <a href="#" onClick={(e) => { e.preventDefault(); RegisterFormToggle(); }} >Sign up</a>
-                        <a href="#" onClick={(e) => { e.preventDefault(); LoginFormToggle(); }} >Sign in</a>
+                        <a href="#" onClick={RegisterFormToggle} >Sign up</a>
+                        <a href="#"  onClick={(e) => { e.preventDefault(); LoginFormToggle(); }} >Sign in</a>
                         </>
                     )
                     }
                     
                     <Link to="/admin">Admin Area</Link>
-                    {/* <Link to="/modal">Modla</Link> */}
+                    <Link to="/modal">Modla</Link>
                     {/* <a href="#" hidden={displaynameState}>{user.displayName}</a> */}
                     {
                         authuser && (
@@ -676,7 +571,7 @@ const Header = () => {
                     </li>
                     <li><a href="#">Pages</a>
                     <ul className="dropdown">
-                        <li><Link to="/about-us">About Us</Link></li>
+                        <li><a href="./about.html">About Us</a></li>
                         <li><a href="./shop-details.html">Shop Details</a></li>
                         <li><a href="./shopping-cart.html">Shopping Cart</a></li>
                         <li><a href="./checkout.html">Check Out</a></li>
@@ -695,7 +590,7 @@ const Header = () => {
                 {/* <a href="#"><img src="/assets/img/icon/cart.png" alt="" /> <span>0</span></a> */}
                 {/* <li class="d-none d-lg-block"> */}
                 
-                <a href="index.html" class="text-uppercase mx-3" data-bs-toggle="offcanvas" data-bs-target="#offcanvasCart" aria-controls="offcanvasCart">cart ({Object.keys(cart.items).length})
+                <a href="index.html" class="text-uppercase mx-3" data-bs-toggle="offcanvas" data-bs-target="#offcanvasCart" aria-controls="offcanvasCart">cart (63)
                 </a>
                 {/* </li> */}
                 {/* <div className="price">$0.00</div> */}

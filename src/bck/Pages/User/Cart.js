@@ -1,10 +1,5 @@
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import axiosInstance from '../../Interceptor/axiosInstance'; // path to your interceptor file
-import { useDispatch } from "react-redux";
-import { loginSuccess,logout,loginPopup } from "../../redux/authSlice";
-import { fetchCartReducer } from "../../redux/cartSlice";
-
 const Cart = ()=>{
     const authuser = useSelector((state) => state.auth.user);
     const cart = useSelector((state) => state.cart);
@@ -21,21 +16,6 @@ const Cart = ()=>{
             cartTotal += price * quantity;
         }
         setTotal(cartTotal);
-    }
-    const dispatch = useDispatch();
-    const fetchCart = async()=>{
-      try{
-        const cartItems = await axiosInstance.get(`/api/get-cart-items/`);
-        console.log(cartItems);
-        dispatch(fetchCartReducer(cartItems.data.cartItems));
-      }catch(err){
-        console.error("User not logged in or token expired", err);
-        if(err.response.status == 403 || err.response.status == 401)
-        dispatch(loginPopup({ showForm: true }));
-        // dispatch(logout()); // Optional: in case you want to clear auth state
-      }
-     
-          
     }
     useEffect(()=>{
 
@@ -54,7 +34,7 @@ const Cart = ()=>{
         document.body.appendChild(script);
 
 
-        fetchCart();
+
         calculate(cart);
 
     },[]);
@@ -98,35 +78,35 @@ const Cart = ()=>{
                 </tr>
               </thead>
               <tbody>
-                 {cart && Array.isArray(cart.items) && cart.items.length>0 && cart.items.map((item,i)=>(
-
+                {cart && cart.items && Object.keys(cart.items).map((item)=>{
+                    return(
                         <tr>
                             <td className="product__cart__item">
                                 <div className="product__cart__item__pic">
-                                <img height="70" width="50"src={`${item.image}`} alt="" />
+                                <img src="img/shopping-cart/cart-1.jpg" alt="" />
                                 </div>
                                 <div className="product__cart__item__text">
-                                <h6>{item.metaData?.name}</h6>
-                                <h5>{item.metaData?.size}</h5>
+                                <h6>{cart.items[item].metaData.name}</h6>
+                                <h5>${cart.items[item].metaData.price}</h5>
                                 </div>
                             </td>
                             <td class="quantity__item">
                                 <div class="product__details__cart__option">
                                     <div class="quantity">
                                         <div class="pro-qty">
-                                            <input type="text" value={item.quan } />
+                                            <input type="text" value={cart.items[item].quan ?cart.items[item].quan:1 } />
                                             
                                         </div>
                                     </div>
                                 </div>
                             </td>
-                            <td className="cart__price">$ {item.quan?item.price*item.quan:item.price}</td>
+                            <td className="cart__price">$ {cart.items[item]?.quan?cart.items[item].metaData.price*cart.items[item].quan:cart.items[item].metaData.price}</td>
                             <td className="cart__close">
                                 <i className="fa fa-close" />
                             </td>
                         </tr>
-                    
-                ))}
+                    )
+                })}
                
                
               </tbody>

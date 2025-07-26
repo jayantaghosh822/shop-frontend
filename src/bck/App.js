@@ -15,7 +15,7 @@ import CreateProduct from './Pages/Admin/CreateProduct';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 // import { googleLogout, useGoogleLogin } from '@react-oauth/google';
 import { useDispatch } from "react-redux";
-import { loginSuccess,logout,loginPopup } from "./redux/authSlice";
+import { loginSuccess,logout } from "./redux/authSlice";
 import React, { useEffect } from "react";
 import axios from 'axios';
 import RequireAuth from './Utils/RequireAuth';
@@ -29,30 +29,31 @@ import Product from './Pages/User/Product.js';
 // import $ from "jquery";
 import Cart from './Pages/User/Cart.js';
 import EmailVerificationConfirmed from './Pages/User/EmailVerified.js';
-import axiosInstance from '../src/Interceptor/axiosInstance.js'; // path to your interceptor file
 
 const App = () => {
   const dispatch = useDispatch();
-   useEffect(() => {
-    const fetchUser = async () => {
-      try {
+  useEffect(()=>{
+    const verifyUser = async()=> {
+      try{
+         
         const backendUrl = process.env.REACT_APP_BACKEND_URL;
-        const res = await axiosInstance.get(`${backendUrl}/api/user/me`, {
-          withCredentials: true,
-        });
-        console.log(res);
-        if (res.data?.user) {
-          dispatch(loginSuccess({ user: res.data.user }));
+        const userStatus = await axios.get(backendUrl+'/api/user/verify-user' , { withCredentials: true });
+        if(userStatus.data.success){
+          // if(userStatus.data.user){
+            dispatch(loginSuccess({ user: userStatus.data.user }));
+            // dispatch(addToCart({ items: userStatus.data.user }));
+          // }
+         
+          // dispatch(loginSuccess({ loading: false }));
         }
-      } catch (err) {
-        // console.error("User not logged in or token expired", err);
-        // dispatch(loginPopup({ showForm: true }));
-        // dispatch(logout()); // Optional: in case you want to clear auth state
+        
+      }catch(err){
+        console.log(err);
       }
-    };
-
-    fetchUser();
-  }, [dispatch]);
+     
+    }
+    verifyUser();
+  },[]);
 
   return (
     <BrowserRouter>

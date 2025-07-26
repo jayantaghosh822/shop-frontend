@@ -1,16 +1,16 @@
 import React from 'react';
-import { useState , useRef , useEffect } from 'react';
+import { useState  , useEffect } from 'react';
 import axios from 'axios';
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import useScript from "../../Hooks/jsLoader";
 import Layout from "../../Layouts/User/Layout";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useNavigate, useLocation } from "react-router-dom"; // if you're using react-router-dom v6
-import { useDispatch } from "react-redux";
+// import { useDispatch } from "react-redux";
 import { reduxAddToCart } from '../../redux/cartSlice';
 import { useSelector } from "react-redux";
-import { fetchCart,cleanCart } from '../../redux/cartSlice';
+
 import { CSSProperties } from "react";
 import { ClipLoader } from "react-spinners";
 import Button from 'react-bootstrap/Button';
@@ -30,10 +30,10 @@ const Store = () =>{
 
     const cart = useSelector((state) => state.cart);
     console.log(cart);
-    // useEffect(()=>{
-    //     console.log(itemsInCart);
-    //     console.log(cart);
-    // },[cart])
+    useEffect(()=>{
+        console.log(itemsInCart);
+        console.log(cart);
+    },[cart])
     const toggleProductSizeActiveClass = (proID , proName, sizeID ,size ,price)=> {
         // alert(proID);
         // alert(sizeID);
@@ -78,7 +78,7 @@ const Store = () =>{
     //     return true;
     // }
     const MyVerticallyCenteredModal =(props)=>{
-        console.log(props);
+        // console.log(props);
         let disabled = true;
         
         if(props.productData.name){
@@ -127,7 +127,7 @@ const Store = () =>{
                     <button disabled={disabled} class="w-100 btn btn-primary btn-lg" onClick={(e) => {
                                                         e.preventDefault();
                                                         // alert('test');
-                                                        addToCart(props.productData);
+                                                        addToCart(props.productData._id);
                     }} type="submit" style={{ backgroundColor: '#0e0e0d' }}>Add To Cart</button>
 
                   </Modal.Footer>
@@ -137,27 +137,20 @@ const Store = () =>{
      
     }
     const authuser = useSelector((state) => state.auth.user);
-    console.log("category Page user",authuser);
-    const dispatch = useDispatch();
-    const addToCart= async(item)=>{
+    // console.log("category Page user",authuser);
+    // const dispatch = useDispatch();
+    const addToCart= async(itemId)=>{
         try{
-        console.log(item);
-        const itemId = item._id;
         const productData = {
             'product': itemId,
             'metaData':{
                 'name': sizesChosenForProducts[itemId].name,
                 'size': sizesChosenForProducts[itemId].size,
-                'sizeId':sizesChosenForProducts[itemId].sizeId,
-
+                'price': sizesChosenForProducts[itemId].price
             },
-            'price': sizesChosenForProducts[itemId].price,
-            'image':item.images.mainImage,
             'quan':1
             
         };
-
-       
         let itemData = {};
         if(authuser){
             const backendUrl = process.env.REACT_APP_BACKEND_URL;
@@ -175,48 +168,37 @@ const Store = () =>{
                 draggable: true,
                 progress: undefined,
             });
-            dispatch(fetchCart());
-            // console.log(itemData);
-            // setItemsInCart(prev=>{
-            //     return{
-            //         ...prev,
-            //         ...itemData
-            //     }
-            // });
+            itemData = {
+                [addToCart.data.itemSaved._id] :{
+                    'productId':addToCart.data.itemSaved.product,
+                    'metaData':addToCart.data.itemSaved.metaData
+                }
+            }
+            console.log(itemData);
+            setItemsInCart(prev=>{
+                return{
+                    ...prev,
+                    ...itemData
+                }
+            });
         }else{
-            console.log(sizesChosenForProducts);
-            console.log(sizesChosenForProducts.itemId);
             const tempId = `temp_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
             itemData = {
-                    'product': itemId,
+                [tempId]:{
+                    'productId':itemId,
                     'metaData':{
                         'name': sizesChosenForProducts[itemId].name,
                         'size': sizesChosenForProducts[itemId].size,
-                        'sizeId':sizesChosenForProducts[itemId].sizeId
-                    },
-                    'price': sizesChosenForProducts[itemId].price,
-                    'image':item.images.mainImage,
-                    'quan':1
-                
+                        'price': sizesChosenForProducts[itemId].price
+                    }
+                }
             }
-            console.log(itemData);
-            dispatch(reduxAddToCart({ itemData,authuser }));
-            toast.success('Product Added To Cart', {
-                    position: "top-right",
-                    autoClose: 3000,
-                    hideProgressBar: false,
-                    closeOnClick: true,
-                    pauseOnHover: true,
-                    draggable: true,
-                    progress: undefined,
+            setItemsInCart(prev=>{
+                return{
+                    ...prev,
+                    ...itemData
+                }
             });
-            // return;
-            // setItemsInCart(prev=>{
-            //     return{
-            //         ...prev,
-            //         ...itemData
-            //     }
-            // });
         }
 
         
@@ -225,27 +207,18 @@ const Store = () =>{
 
         setModalShow(false);
        
-        
+        // dispatch(reduxAddToCart({ itemData,authuser }));
         }catch(err){
-            console.log(err);
-            toast.error('Something Went Wrong', {
-                position: "top-right",
-                autoClose: 3000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-            });
+
         }
        
         
         
     }
 
-    // useScript([
-    //     "/assets/js/main.js",
-    // ]);
+    useScript([
+        "/assets/js/main.js",
+    ]);
     const [modalShow, setModalShow] = useState(true);
 
     //set products and filterLists
@@ -427,7 +400,20 @@ const Store = () =>{
     const navigate = useNavigate();
     const location = useLocation();
     
-    
+    //set filters states from url when reloadede
+    useEffect(() => {
+        const searchParams = new URLSearchParams(location.search);
+        const brandsFromUrl = searchParams.get('brands')?.split(',') || [];
+        const colorsFromUrl = searchParams.get('colors')?.split(',') || [];
+        const sizesFromUrl = searchParams.get('sizes')?.split(',') || [];
+        const pricesFromUrl = searchParams.get('prices')?.split(',') || [];
+      
+        if (brandsFromUrl.length) setfilterBrands(brandsFromUrl);
+        if (colorsFromUrl.length) setfilterColors(colorsFromUrl);
+        if (sizesFromUrl.length) setfilterSizes(sizesFromUrl);
+        if (pricesFromUrl.length) setfilterPrices(pricesFromUrl);
+        setFiltersReady(true); // ✅ only after setting all
+    }, []); // <-- empty dependency array! runs only once
     
 
 
@@ -514,27 +500,13 @@ const Store = () =>{
 
                 const queryString = queryParams.toString();
                 if (filterBrands.length > 0 || filterPrices.length > 0 || filterSizes.length > 0 || filterColors.length > 0){
+                    // alert("has value");
                     navigate(`${location.pathname}?${queryString}`, { replace: true });
                 }
                 if (filterBrands.length == 0 && filterPrices.length == 0 && filterSizes.length == 0 && filterColors.length == 0){
                     navigate(`${location.pathname}`, { replace: true });
+                    //  alert("empty");
                 }
-
-                
-
-                const script = document.createElement("script");
-                const src = '/assets/js/main-shop.js';
-                script.src = src;
-                script.async = true;
-                script.onload = () => {
-                    console.log(`${src} loaded.`);
-                    if (window.jQuery) {
-                    window.$ = window.jQuery; // Ensure jQuery is globally available
-                    }
-                    // if (onLoadCallback) onLoadCallback();
-                };
-                script.onerror = () => console.error(`Error loading ${src}`);
-                document.body.appendChild(script);
             
             }catch(err){
                 // console.log('brands',err);
@@ -546,8 +518,11 @@ const Store = () =>{
 
     },[filtersReady,filterBrands,filterPrices,filterSizes,filterColors]);
 
-   
+    useEffect(()=>{
+         console.log(location)
 
+    },[location])
+  
 
     const pageChangefilterProducts= async(pageno)=>{
         // alert("pagechamged");
@@ -621,17 +596,7 @@ const Store = () =>{
 
 
     const [producModalData , setProducModalData] = useState({});
-
-    const[count , setCount] = useState(0);
     
-    // const [addToCart , setAddToCart] = useState(false);
-    
-    console.log('tets');
-
-    
-    const incCount = ()=>{
-        setCount(count+1);
-    }
     return(
         <>
        {MyLoader()}
@@ -640,7 +605,7 @@ const Store = () =>{
 {/* {console.log(itemsInCart)} */}
             <div >
                 {/* Breadcrumb Section Begin */}
-                <section className="breadcrumb-option" onClick={incCount}>
+                <section className="breadcrumb-option">
                 <div className="container">
                     <div className="row">
                     <div className="col-lg-12">
@@ -803,40 +768,31 @@ const Store = () =>{
                         </div>
                         </div>
                         <div className="row">
-                       
+                       {console.log("argha")}
                         { catProducts.map((elem)=>{
                             return(
-                            
                             <div key={elem._id} className="col-lg-4 col-md-6 col-sm-6">
                                 <div className="product__item">
-                                <Link to = {`/p/${elem.id}`}>
-                                    <div
-                                        className="product__item__pic set-bg"
-                                        style={{ backgroundImage: `url(${elem.images.mainImage})` }}
-                                        >
-                                        <ul className="product__hover">
-                                            <li>
-                                            <img alt="" src="/assets/img/icon/heart.png" />
-                                            </li>
-                                        </ul>
-                                    </div>
+                                <div className="product__item__pic set-bg" data-setbg={elem.images.mainImage}>
+                                    <ul className="product__hover">
+                                    <li><a href="#"><img src="/assets/img/icon/heart.png" alt="" /></a></li>
+                                    {/* <li><a href="#"><img src="/assets/img/icon/compare.png" alt="" /> <span>Compare</span></a>
+                                    </li>
+                                    <li><a href="#"><img src="/assets/img/icon/search.png" alt="" /></a>
+                                    </li> */}
 
-                                {/* <div class="product__item__pic set-bg" data-setbg={elem.images.mainImage}>
-                                    <ul class="product__hover">
-                                        <li><img alt="" src="/assets/img/icon/heart.png" />
-                                        </li>
+                               
                                     </ul>
-                                </div> */}
-                                </Link>
+                                </div>
                                 <div className="product__item__text">
                                     <h6 >{elem.name}</h6>
-                                    {/* {console.log(cart)} */}
-                                    {(Object.entries(cart.items).some(
+                                    
+                                    {/* {(Object.entries(cart.items).some(
                                              ([key, value]) => value.productId==elem._id
                                     ))?
-                                    <a href="#" onClick={(e) => {e.preventDefault();}} className="add-cart">Added To Cart</a>:
-                                    <a href="#" onClick={(e) => {e.preventDefault();setModalShow(true);setProducModalData(elem);}} className="add-cart">+ Add To Cart</a>
-                                    }
+                                    <a href="#opneprobox" className="add-cart">Added To Cart</a>:
+                                    <a href="#opneprobox" onClick={() => {setModalShow(true);setProducModalData(elem);}} className="add-cart">+ Add To Cart</a>
+                                    } */}
                                     {/* <a href="#opneprobox" onClick={() => {setModalShow(true);setProducModalData(elem);}} className="add-cart">+ Add To Cart</a> */}
                                     <div className="rating">
                                     <i className="fa fa-star-o" />
@@ -860,7 +816,6 @@ const Store = () =>{
                                 </div>
                                 </div>
                             </div>
-                            // </Link>
                             );
                            
                         })}

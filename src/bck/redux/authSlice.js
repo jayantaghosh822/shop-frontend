@@ -11,7 +11,6 @@ const initialState = {
   user: null,
   loading: true,
   token: getCookie("token") || null, // Load token from cookie
-  showLoginForm:false
 };
 
 const authSlice = createSlice({
@@ -21,18 +20,14 @@ const authSlice = createSlice({
     loginSuccess: (state, action) => {
       state.user = action.payload.user;
       state.loading = false;
-      localStorage.removeItem("savedCartItems");
     },
     logout: (state) => {
       // alert('loging out');
       state.user = null;
       state.loading = false;
     },
-    loginPopup: (state,action) => {
-      state.showLoginForm = action.payload.showForm;
-    },
   },
 });
 
-export const { loginSuccess, logout , loginPopup } = authSlice.actions;
+export const { loginSuccess, logout } = authSlice.actions;
 export default authSlice.reducer;

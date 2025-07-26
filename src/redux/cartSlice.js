@@ -2,10 +2,13 @@ import { createSlice } from "@reduxjs/toolkit";
 import axios from 'axios';
 import { useSelector } from "react-redux";
 import { createAsyncThunk } from '@reduxjs/toolkit';
+
+// In the same file where you're calling createAsyncThunk
+import axiosInstance from '../Interceptor/axiosInstance'; // path to your interceptor file
 // Read cookie on page load (optional helper)
 const savedCart = JSON.parse(localStorage.getItem("savedCartItems")) 
 || JSON.parse(localStorage.getItem("unSavedCartItems")) 
-|| {};
+|| [];
 console.log("saved items",savedCart);
 const initialState = {
   items: savedCart,
@@ -14,88 +17,62 @@ const initialState = {
 export const fetchCart = createAsyncThunk(
   "cart/fetchCart",
   async (userId) => {
-    const backendUrl = process.env.REACT_APP_BACKEND_URL;
-    const cartItems = await axios.get(`${backendUrl}/api/get-cart-items/`, {
-      withCredentials: true,
-    });
-
-    const itemsFormatted = {};
-    cartItems.data.cartItems.forEach(element => {
-      itemsFormatted[element._id] = {
-        productId: element.product,
-        metaData: element.metaData
-      };
-    });
-
-    localStorage.setItem("savedCartItems", JSON.stringify(itemsFormatted));
+    const res = await axiosInstance.get(`/api/get-cart-items/`);
     
-    // ✅ Return this for .fulfilled case
-    return itemsFormatted;
+    console.log("saved items", res.data.cartItems);
+
+    // localStorage.setItem("savedCartItems", JSON.stringify(res.data.cartItems));
+
+    return res.data.cartItems;
   }
 );
 
 
-function deepEqual(obj1, obj2) {
-  return Object.keys(obj1).length === Object.keys(obj2).length &&
-    Object.keys(obj1).every(key => obj1[key] === obj2[key]);
-}
 
-// const isEqual = deepEqual(metaData1, metaData2);
-// const authuser = useSelector((state) => state.auth.user);
 const cartSlice = createSlice({
   name: "items",
   initialState,
   reducers: {
     reduxAddToCart: (state, action) => {
-
-      const newItem = action.payload.itemData; // { temp_key: { productId, metaData } }
+      const newItem = action.payload.itemData; // newItem is already structured like a cart item
       const authuser = action.payload.authuser;
-      const firstKey = Object.keys(newItem)[0]; 
-      const { productId, metaData } = newItem[firstKey];
+      console.log(JSON.stringify(newItem, null, 2));
+      console.log(JSON.stringify(state.items, null, 2));
+      // console.log(newItem);
+      const existingIndex = state.items.findIndex(
+        (item) =>
+          item.product === newItem.product &&
+          item.metaData.sizeId == newItem.metaData.sizeId
+      );
+      console.log(existingIndex);
+      if (existingIndex !== -1) {
+        // Item exists, update quantity
+        state.items[existingIndex].quan += newItem.quan || 1;
+      } else {
+        // New item, push to array
+        state.items.push(newItem);
+      }
 
-      // Check if the same product + size already exists in cart
-      let found = false;
-
-      for (const key in state.items) {
-        const item = state.items[key];
-
-        if (
-          item.productId === productId &&
-          deepEqual(item.metaData, metaData)
-        ) {
-          // If same productId and same metaData (e.g., size, price), increase quantity
-          const currentQuantity = item.quan || 0;
-
-          state.items[key] = {
-            ...item,
-            quan: currentQuantity + 1
-          };
-
-          found = true;
-          break;
+      // Save to localStorage
+      const key = authuser ? "savedCartItems" : "unSavedCartItems";
+    
+      try {
+        localStorage.setItem(key, JSON.stringify(state.items));
+      } catch (e) {
+        if (e.name === "QuotaExceededError") {
+          console.error("LocalStorage limit exceeded!");
+          alert("Cart data is too large. Please remove some items.");
         }
       }
-
-      if (!found) {
-        // Add as a new entry if not present
-        state.items = {
-          ...state.items,
-          ...newItem
-        };
-      }
-  // const authuser = null;
-    if(authuser){
-      localStorage.setItem("savedCartItems", JSON.stringify(state.items));
-    }else{
-      localStorage.setItem("unSavedCartItems", JSON.stringify(state.items));
-    }
-   
     },
     cleanCart: (state, action) => {
-      
       localStorage.removeItem("savedCartItems");
-      state.items = {};
+      state.items = [];
     },
+    fetchCartReducer: (state,action)=>{
+       console.log(action.payload);
+       state.items = action.payload;
+    }
     
     
   },
@@ -108,5 +85,5 @@ const cartSlice = createSlice({
   }
 });
 
-export const { reduxAddToCart,cleanCart } = cartSlice.actions;
+export const { reduxAddToCart,cleanCart,fetchCartReducer } = cartSlice.actions;
 export default cartSlice.reducer;

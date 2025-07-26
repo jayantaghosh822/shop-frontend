@@ -4,7 +4,7 @@ import axios from "axios";
 import { Link } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { fetchCart,cleanCart } from '../../redux/cartSlice';
+
 import { useParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { reduxAddToCart } from '../../redux/cartSlice';
@@ -79,9 +79,8 @@ const Product = () =>{
             'metaData':{
                 'name': product.name,
                 'size': selectedSize.size,
-                'sizeId':selectedSize._id
+                'price': selectedSize.price,
             },
-            'price': selectedSize.price,
             'quan':1
             
         };
@@ -102,51 +101,37 @@ const Product = () =>{
                 draggable: true,
                 progress: undefined,
             });
-            dispatch(fetchCart());
-            // itemData = {
-            //     'product': params.p,
-            //     'metaData':{
-            //         'name': product.name,
-            //         'size': selectedSize.size,
-            //         'sizeId':selectedSize._id
-            //     },
-            //     'price': selectedSize.price,
-            //     'quan':1
-            // }
-            // console.log(itemData);
-            // setItemsInCart(prev=>{
-            //     return{
-            //         ...prev,
-            //         ...itemData
-            //     }
-            // });
+            itemData = {
+                [addToCart.data.itemSaved._id] :{
+                    'productId':addToCart.data.itemSaved.product,
+                    'metaData':addToCart.data.itemSaved.metaData
+                }
+            }
+            console.log(itemData);
+            setItemsInCart(prev=>{
+                return{
+                    ...prev,
+                    ...itemData
+                }
+            });
         }else{
             const tempId = `temp_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
             itemData = {
-                'product': params.p,
-                'metaData':{
-                    'name': product.name,
-                    'size': selectedSize.size,
-                    'sizeId':selectedSize._id
-                },
-                'price': selectedSize.price,
-                'quan':1
+                [tempId]:{
+                    'productId':params.p,
+                    'metaData':{
+                        'name': product.name,
+                        'size': selectedSize.size,
+                        'price': selectedSize.price,
+                    },
+                    'quan':1
+                }
             }
-            // setItemsInCart(prev=>{
-            //     return{
-            //         ...prev,
-            //         ...itemData
-            //     }
-            // });
-            dispatch(reduxAddToCart({ itemData,authuser }));
-            toast.success('Product Added To Cart', {
-                position: "top-right",
-                autoClose: 3000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
+            setItemsInCart(prev=>{
+                return{
+                    ...prev,
+                    ...itemData
+                }
             });
         }
 
@@ -156,7 +141,16 @@ const Product = () =>{
 
         // setModalShow(false);
        
-
+        dispatch(reduxAddToCart({ itemData,authuser }));
+        toast.success('Product Added To Cart', {
+                position: "top-right",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+        });
         }catch(err){
             toast.error('Something Went Wrong', {
                 position: "top-right",
