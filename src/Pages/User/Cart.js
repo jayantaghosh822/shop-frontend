@@ -4,29 +4,40 @@ import axiosInstance from '../../Interceptor/axiosInstance'; // path to your int
 import { useDispatch } from "react-redux";
 import { loginSuccess,logout,loginPopup } from "../../redux/authSlice";
 import { fetchCartReducer } from "../../redux/cartSlice";
+import { Outlet, Link } from "react-router-dom";
 
 const Cart = ()=>{
     const authuser = useSelector((state) => state.auth.user);
-    const cart = useSelector((state) => state.cart);
-    const [total , setTotal] = useState(0);
-    const calculate =(cart)=>{
-        console.log(cart.items);
-        let cartTotal = 0;
+    const reduxCart = useSelector((state) => state.cart);
+    const [cart , setCart] = useState([]);
+    // const [cartTotal , setTotal] = useState(0);
+    // const calculate =(cart)=>{
+    //     console.log(cart.items);
+    //     let cartTotal = 0;
 
-        for (const key in cart.items) {
-            const item = cart.items[key];
-            // console.log();
-            const price = item.metaData.price;
-            const quantity = item.quan || 1;
-            cartTotal += price * quantity;
-        }
-        setTotal(cartTotal);
-    }
+    //     for (const key in cart.items) {
+    //         const item = cart.items[key];
+    //         // console.log();
+    //         const price = item.metaData.price;
+    //         const quantity = item.quan || 1;
+    //         cartTotal += price * quantity;
+    //     }
+    //     setTotal(cartTotal);
+    // }
+    useEffect(()=>{
+      if(authuser){
+        setCart([...reduxCart.items]);
+      }else{
+         setCart([]);
+      }
+       
+    },[reduxCart])
     const dispatch = useDispatch();
     const fetchCart = async()=>{
       try{
         const cartItems = await axiosInstance.get(`/api/get-cart-items/`);
         console.log(cartItems);
+        setCart(cartItems.data.cartItems);
         dispatch(fetchCartReducer(cartItems.data.cartItems));
       }catch(err){
         console.error("User not logged in or token expired", err);
@@ -55,13 +66,101 @@ const Cart = ()=>{
 
 
         fetchCart();
-        calculate(cart);
+        // calculate(cart);
 
     },[]);
 
+    const removeItem = async(id) =>{
+      alert(id);
+      try{
+        const itemDelete = await axiosInstance.delete(`/api/remove-cart-item/`,{
+          params:{itemId:id}
+        });
+
+        console.log(itemDelete);
+        dispatch(fetchCartReducer(itemDelete.data.cartItems));
+      }catch(err){
+        console.error("User not logged in or token expired", err);
+        if(err.response.status == 403 || err.response.status == 401)
+        dispatch(loginPopup({ showForm: true }));
+      }
+    }
+
+    const updateCart = async()=>{
+      try{
+        const cartItems = await axiosInstance.get(`/api/get-cart-items/`);
+        console.log(cartItems);
+        dispatch(fetchCartReducer(cartItems.data.cartItems));
+      }catch(err){
+        console.error("User not logged in or token expired", err);
+        if(err.response.status == 403 || err.response.status == 401)
+        dispatch(loginPopup({ showForm: true }));
+        // dispatch(logout()); // Optional: in case you want to clear auth state
+      }
+    }
 
 
+    console.log(cart);
+    let cartTotal = 0;
+    if (Array.isArray(cart) && cart.length > 0) {
+   
+        (cart).map((item , index)=>{
+            cartTotal = cartTotal + item.price*item.quan;
+        })
+        // console.log(total);
+        // setTotal(total);
+    }
+    console.log(cartTotal);
 
+    const updateQuan = async(id,type)=>{
+      // alert(quan);
+      // return;
+      try{
+        const cartItems = await axiosInstance.patch(`/api/update-item/${id}`,{
+          
+            action:type
+          
+        });
+        console.log(cartItems);
+        dispatch(fetchCartReducer(cartItems.data.cartItems));
+      }catch(err){
+        console.error("User not logged in or token expired", err);
+        if(err.response.status == 403 || err.response.status == 401)
+        dispatch(loginPopup({ showForm: true }));
+        // dispatch(logout()); // Optional: in case you want to clear auth state
+      }
+    }
+
+    const incQuan = async(id,quan)=>{
+      const updatedCart = cart.map(item => {
+        if (item._id === id) {
+          // Return a new object with updated quantity
+          const copiedItem = {...item}
+          copiedItem.quan = copiedItem.quan+1;
+          console.log(copiedItem)
+          return copiedItem;
+        }
+        return item;
+      });
+      updateQuan(id , 'inc');
+      // setCart(updatedCart); // Update state with new array
+    }
+    const decQuan = async(id)=>{
+      console.log(id);
+      // const updatedCart = cart.map(item => {
+      //   if (item._id === id) {
+      //     // Return a new object with updated quantity
+      //     const copiedItem = {...item}
+      //     copiedItem.quan = copiedItem.quan-1;
+      //     console.log(copiedItem);
+      //     return copiedItem;
+      //   }
+      //   return item;
+      // });
+      updateQuan(id , 'dec');
+      // setCart(updatedCart); // Update state with new array
+    }
+    // console.log(cartTotal);
     return(
        <>
   {/* Breadcrumb Section Begin */}
@@ -98,7 +197,8 @@ const Cart = ()=>{
                 </tr>
               </thead>
               <tbody>
-                 {cart && Array.isArray(cart.items) && cart.items.length>0 && cart.items.map((item,i)=>(
+                {console.log(cart)}
+                 {cart && Array.isArray(cart) && cart.length>0 && cart.map((item,i)=>(
 
                         <tr>
                             <td className="product__cart__item">
@@ -114,15 +214,16 @@ const Cart = ()=>{
                                 <div class="product__details__cart__option">
                                     <div class="quantity">
                                         <div class="pro-qty">
-                                            <input type="text" value={item.quan } />
-                                            
+                                        <span class="fa fa-angle-up dec qtybtn" onClick={(e)=>{incQuan(item._id)}}></span>
+                                            <input type="text" readOnly value={item.quan } onChange={(e)=>{updateQuan(item._id,parseInt(e.target.value))}}/>
+                                        <span class="fa fa-angle-down inc qtybtn" onClick={(e)=>{decQuan(item._id)}}></span>
                                         </div>
                                     </div>
                                 </div>
                             </td>
                             <td className="cart__price">$ {item.quan?item.price*item.quan:item.price}</td>
                             <td className="cart__close">
-                                <i className="fa fa-close" />
+                                <i className="fa fa-close" onClick={(e)=>{removeItem(item._id)}}/>
                             </td>
                         </tr>
                     
@@ -135,13 +236,13 @@ const Cart = ()=>{
           <div className="row">
             <div className="col-lg-6 col-md-6 col-sm-6">
               <div className="continue__btn">
-                <a href="#">Continue Shopping</a>
+                <Link to="/">Continue Shopping</Link>
               </div>
             </div>
             <div className="col-lg-6 col-md-6 col-sm-6">
               <div className="continue__btn update__btn">
-                <a href="#">
-                  <i className="fa fa-spinner" /> Update cart
+                <a href="#" onClick={(e)=>{e.preventDefault(); updateCart();}}>
+                  <i className="fa fa-spinner"/> Update cart
                 </a>
               </div>
             </div>
@@ -159,10 +260,10 @@ const Cart = ()=>{
             <h6>Cart total</h6>
             <ul>
               <li>
-                Subtotal <span>$ {total}</span>
+                Subtotal <span>$ {cartTotal}</span>
               </li>
               <li>
-                Total <span>$ {total}</span>
+                Total <span>$ {cartTotal}</span>
               </li>
             </ul>
             <a href="#" className="primary-btn">

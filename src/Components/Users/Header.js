@@ -12,6 +12,7 @@ import { googleLogout, useGoogleLogin } from '@react-oauth/google';
 import { validatePassword } from '../../Utils/ValiadatePass';
 import { fetchCart,cleanCart } from '../../redux/cartSlice';
 import "react-toastify/dist/ReactToastify.css";
+import { useLocation } from 'react-router-dom';
 // import {NotificationContainer, NotificationManager} from 'react-notifications';
 
 const Header = () => {
@@ -439,6 +440,16 @@ const Header = () => {
         }
        
     }
+
+    const location = useLocation();
+    useEffect(() => {
+        console.log('Path changed to:', location.pathname);
+        showregisterForm(false);
+        showloginForm(false);
+    // 👉 Run your code here
+    // e.g. scroll to top, track pageview, reset state, etc.
+
+    }, [location.pathname]); // runs only when the path changes
   return (
    
     <div>
