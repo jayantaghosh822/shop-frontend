@@ -266,9 +266,9 @@ const Cart = ()=>{
                 Total <span>$ {cartTotal}</span>
               </li>
             </ul>
-            <a href="#" className="primary-btn">
+            <Link to="/checkout" className="primary-btn">
               Proceed to checkout
-            </a>
+            </Link>
           </div>
         </div>
       </div>

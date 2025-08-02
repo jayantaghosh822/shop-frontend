@@ -28,6 +28,7 @@ import Product from './Pages/User/Product.js';
 // Import jQuery if using it (since React doesn't include it by default)
 // import $ from "jquery";
 import Cart from './Pages/User/Cart.js';
+import CheckOut from './Pages/User/Checkout.js';
 import EmailVerificationConfirmed from './Pages/User/EmailVerified.js';
 import axiosInstance from '../src/Interceptor/axiosInstance.js'; // path to your interceptor file
 
@@ -71,6 +72,7 @@ const App = () => {
           <Route path=":category/:subcategory" element={<Store />} />
           <Route path="p/:p" element={<Product />} />
           <Route path="cart" element={<Cart />} />
+          <Route path="checkout" element={<CheckOut />} />
           <Route path="*" element={<ErrorPage />} />
         </Route>
 

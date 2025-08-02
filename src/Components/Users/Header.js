@@ -630,7 +630,7 @@ const Header = () => {
                 <div className="col-lg-6 col-md-5">
                 <div className="header__top__right">
                     <div className="header__top__links">
-                    <a href="#" >{authuser?(authuser.name):''}</a>
+                    <a href="#" >{authuser?(authuser.firstname):''}</a>
                     {/* {console.log(authuser)} */}
                     {
                     (!authuser) && (
