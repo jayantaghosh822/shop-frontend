@@ -40,10 +40,13 @@ const Cart = ()=>{
         setCart(cartItems.data.cartItems);
         dispatch(fetchCartReducer(cartItems.data.cartItems));
       }catch(err){
-        console.error("User not logged in or token expired", err);
+        
         if(err.response.status == 403 || err.response.status == 401)
-        dispatch(loginPopup({ showForm: true }));
-        // dispatch(logout()); // Optional: in case you want to clear auth state
+        {
+          console.error("User not logged in or token expired", err);
+          dispatch(loginPopup({ showForm: true }));
+        }
+
       }
      
           

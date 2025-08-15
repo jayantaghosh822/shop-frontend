@@ -17,7 +17,15 @@ import { useLocation } from 'react-router-dom';
 
 const Header = () => {
     const authuser = useSelector((state) => state.auth.user);
-   
+    // const [preLoader , setPreLoader] = useState(true);
+    const location = useLocation();
+    const preloaderRef = useRef(null);
+    const loaderRef = useRef(null);
+    useEffect(()=>{
+        // setPreLoader(true);
+        preloaderRef.current.removeAttribute("style");
+        loaderRef.current.removeAttribute("style");
+    },[location])
     const registerRef = useRef(null);
     const loginRef = useRef(null);
     useEffect(() => {
@@ -441,7 +449,7 @@ const Header = () => {
        
     }
 
-    const location = useLocation();
+
     useEffect(() => {
         console.log('Path changed to:', location.pathname);
         showregisterForm(false);
@@ -465,7 +473,7 @@ const Header = () => {
                 <span class="" style={{ color: '#0e0e0d' }}>({Object.keys(cart.items).length})</span>
                 </h4>
                 <ul class="list-group mb-3">
-                    {console.log(cart)}
+                    {/* {console.log(cart)} */}
                 {cart && Array.isArray(cart.items) && cart.items.length>0 && cart.items.map((item,i)=>(
                     
                     <li key={i} className="list-group-item d-flex justify-content-between lh-sm align-items-center">
@@ -582,8 +590,8 @@ const Header = () => {
             </div>
         </div>
         {/* Page Preloder */}
-        <div id="preloder">
-        <div className="loader" />
+        <div id="preloder"  ref={preloaderRef} >
+            <div className="loader" ref={loaderRef} />
         </div>
         {/* Offcanvas Menu Begin */}
         <div className="offcanvas-menu-overlay" />

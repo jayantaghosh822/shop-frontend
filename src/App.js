@@ -29,6 +29,8 @@ import Product from './Pages/User/Product.js';
 // import $ from "jquery";
 import Cart from './Pages/User/Cart.js';
 import CheckOut from './Pages/User/Checkout.js';
+import OrderPlaced from './Pages/User/OrderPlaced.js';
+import StripePayment from './Pages/User/StripePayment.js';
 import EmailVerificationConfirmed from './Pages/User/EmailVerified.js';
 import axiosInstance from '../src/Interceptor/axiosInstance.js'; // path to your interceptor file
 
@@ -73,6 +75,8 @@ const App = () => {
           <Route path="p/:p" element={<Product />} />
           <Route path="cart" element={<Cart />} />
           <Route path="checkout" element={<CheckOut />} />
+           <Route path="order-successful/:id" element={<OrderPlaced />} />
+           <Route path="stripe-payment/" element={<StripePayment />} />
           <Route path="*" element={<ErrorPage />} />
         </Route>
 
