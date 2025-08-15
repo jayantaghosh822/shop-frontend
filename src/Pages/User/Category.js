@@ -255,6 +255,8 @@ const Store = () =>{
     const [productSizes,setSizes] = useState([]);
     const [productColors,setColors] = useState([]);
     const [pageInfo , setPageInfo] = useState({});
+    const minPrice = useState(0);
+    const maxPrice = useState(0);
     let [currentPage , setCurrentPage] = useState(null);
     const [filtersReady, setFiltersReady] = useState(false);
     // const [totalPages , setTotalPages] = useState(0);
@@ -284,6 +286,7 @@ const Store = () =>{
     };
   
     const renderPriceHtml = () => {
+        console.log(productPrices);
         if (!productPrices || productPrices.length === 0) return null;
       
         const min = Math.min(...productPrices);
@@ -326,9 +329,10 @@ const Store = () =>{
 
 
     const renderSizeHtml = () => {
+        console.log(productSizes);
         if (!productSizes || productSizes.length === 0) return null;
       
-    //    console.log(productSizes);
+       
         let sizeArray = [];
         let sizeFilterList = [];
      
@@ -336,11 +340,11 @@ const Store = () =>{
                
                   
                     sizeFilterList.push(
-                        <label htmlFor="" className={filterSizes.some(s => s === size.size) ? "active" : ""} key={size.size} onClick={(e) => {
+                        <label htmlFor="" className={filterSizes.some(s => s === size) ? "active" : ""} key={size} onClick={(e) => {
                             e.preventDefault();
-                            toggleSizes(size.size);
+                            toggleSizes(size);
                             }}
-                        >{size.size} 
+                        >{size} 
                             <input type="radio" id="xs" />
                         </label>
                     );
@@ -353,7 +357,7 @@ const Store = () =>{
         // You can generate multiple ranges dynamically if you want
         
     };
-      
+    //   console.log(filterColors);
     const toggleSizes = (size) => {
        
 
@@ -681,19 +685,19 @@ const Store = () =>{
                                 <div className="card-body">
                                     <div className="shop__sidebar__brand">
                                     <ul>
-                                        
+                                        {console.log(productBrands)}
                                         {productBrands.map((brand)=>{
                                             return(
-                                                <li key={brand._id}>
+                                                <li key={brand}>
                                                     <a
                                                         href="#"
-                                                        className={filterBrands.some(b => b === brand._id) ? "brandselected" : "brandnotselected"}
+                                                        className={filterBrands.some(b => b === brand) ? "brandselected" : "brandnotselected"}
                                                         onClick={(e) => {
                                                         e.preventDefault();
-                                                        toggleBrand(brand._id);
+                                                        toggleBrand(brand);
                                                         }}
                                                     >
-                                                        {brand.name}
+                                                        {brand}
                                                     </a>
                                                 </li>
                                             );
@@ -744,10 +748,10 @@ const Store = () =>{
                                     <div className="shop__sidebar__size">
                                         {productColors.map((color)=>{
                                             return(
-                                                <label htmlFor="" key={color._id} className={filterColors.some(c=>color._id==c)?'box-color active':'box-color'}  onClick={(e) => {
+                                                <label htmlFor="" key={color} className={filterColors.some(c=>color==c)?'box-color active':'box-color'}  onClick={(e) => {
                                                     e.preventDefault();
-                                                    toggleColors(color._id);
-                                                    }} >{color.name}
+                                                    toggleColors(color);
+                                                    }} >{color}
                                                     <input type="radio" id="" />
                                                 </label>
                                             );
@@ -809,7 +813,7 @@ const Store = () =>{
                             
                             <div key={elem._id} className="col-lg-4 col-md-6 col-sm-6">
                                 <div className="product__item">
-                                <Link to = {`/p/${elem.id}`}>
+                                <Link to = {`/p/${elem.slug}`}>
                                     <div
                                         className="product__item__pic set-bg"
                                         style={{ backgroundImage: `url(${elem.images.mainImage})` }}
@@ -845,7 +849,7 @@ const Store = () =>{
                                     <i className="fa fa-star-o" />
                                     <i className="fa fa-star-o" />
                                     </div>
-                                    <h5>${getPrice(elem.size)}</h5>
+                                    <h5>${(elem.lowestPrice)}</h5>
                                     <div className="product__color__select">
                                     {/* <label htmlFor="pc-4">
                                         <input type="radio" id="pc-4" />
