@@ -42,7 +42,7 @@ const cartSlice = createSlice({
       const existingIndex = state.items.findIndex(
         (item) =>
           item.product === newItem.product &&
-          item.metaData.sizeId == newItem.metaData.sizeId
+          item.variationId == newItem.variationId
       );
       console.log(existingIndex);
       if (existingIndex !== -1) {

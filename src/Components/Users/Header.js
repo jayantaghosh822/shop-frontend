@@ -343,25 +343,43 @@ const Header = () => {
         // setProfile(null);
     };
 
+    const [cartData, setCartData] = useState([]);
     // const [cartArr , setCartArr] = useState([]);
     const cart = useSelector((state) => state.cart);
     let cartTotal = 0;
     console.log(cart);
-    if (Array.isArray(cart.items) && cart.items.length > 0) {
-        (cart.items).map((item , index)=>{
-            cartTotal = cartTotal + item.price;
+    if (Array.isArray(cartData) && cartData.length > 0) {
+        (cartData).map((item , index)=>{
+            console.log(item);
+            cartTotal = cartTotal + item.quan*item.variation.price;
         })
     }
     
 
     console.log(cartTotal);
     
-    // useEffect(() => {
-    //     if (user.email) {
-    //         console.log("mu user1",user);
-    //     dispatch(fetchCart());
-    //     }
-    // }, [dispatch, user])
+    useEffect(() => {
+        console.log(cart);
+        getCartItems();
+    }, [cart]);
+
+    const getCartItems = async () => {
+        try{
+            const backendUrl = process.env.REACT_APP_BACKEND_URL;
+            const cartData = await axios.post(
+                `${backendUrl}/api/get-cart-data`,
+                { cart },   // body
+                { withCredentials: true } // config
+            );
+
+        console.log(cartData.data);
+        setCartData(cartData.data);
+        }catch(err){
+            console.log(err);
+        }
+        
+    };
+
 
     useEffect(() => {
         const addLocalItemsToCart = async()=>{
@@ -473,22 +491,29 @@ const Header = () => {
                 <span class="" style={{ color: '#0e0e0d' }}>({Object.keys(cart.items).length})</span>
                 </h4>
                 <ul class="list-group mb-3">
-                    {/* {console.log(cart)} */}
-                {cart && Array.isArray(cart.items) && cart.items.length>0 && cart.items.map((item,i)=>(
+                {console.log("cartdataaaa",cartData)}
+                {cartData && Array.isArray(cartData) && cartData.length>0 && cartData.map((item,i)=>(
                     
                     <li key={i} className="list-group-item d-flex justify-content-between lh-sm align-items-center">
                         <div className="d-flex align-items-center">
                             <img
-                                src={`${item.image}`} // <- Ensure you have `image` in your cart item's metaData
+                                src={`${item.variation.product.image}`} // <- Ensure you have `image` in your cart item's metaData
                                 
                                 style={{ width: '60px', height: '60px', objectFit: 'cover', marginRight: '10px', borderRadius: '8px' }}
                             />
                             <div>
-                                <h6 className="my-0">{item.metaData?.name}</h6>
-                                <small className="text-body-secondary">{item.metaData?.size} x {item.quan}</small>
+                                <h6 className="my-0">{item.variation.product.name}</h6>
+                                <small className="text-body-secondary">
+                                    {Object.entries(item.variation.attributes).map(([key, value]) => (
+                                        <span key={key}>
+                                        {key}: {value}
+                                        </span>
+                                    ))} 
+                                    {" "}× {item.quan}
+                                </small>
                             </div>
                         </div>
-                        <span className="text-body-secondary">${item.price}</span>
+                        <span className="text-body-secondary">${item.variation.price}</span>
                     </li>
                 ))}
                
@@ -649,7 +674,7 @@ const Header = () => {
                     )
                     }
                     
-                    <Link to="/admin">Admin Area</Link>
+                    {/* <Link to="/admin">Admin Area</Link> */}
                     {/* <Link to="/modal">Modla</Link> */}
                     {/* <a href="#" hidden={displaynameState}>{user.displayName}</a> */}
                     {
@@ -693,7 +718,7 @@ const Header = () => {
                     <li>
                      <Link to="/men/men-jeans">Men Denims</Link>
                     </li>
-                    <li><a href="#">Pages</a>
+                    {/* <li><a href="#">Pages</a>
                     <ul className="dropdown">
                         <li><Link to="/about-us">About Us</Link></li>
                         <li><a href="./shop-details.html">Shop Details</a></li>
@@ -701,16 +726,16 @@ const Header = () => {
                         <li><a href="./checkout.html">Check Out</a></li>
                         <li><a href="./blog-details.html">Blog Details</a></li>
                     </ul>
-                    </li>
+                    </li> */}
                     
-                    <li><a href="./contact.html">Contacts</a></li>
+                    {/* <li><a href="./contact.html">Contacts</a></li> */}
                 </ul>
                 </nav>
             </div>
             <div className="col-lg-3 col-md-3">
                 <div className="header__nav__option">
-                <a href="#" className="search-switch"><img src="/assets/img/icon/search.png" alt="" /></a>
-                <a href="#"><img src="/assets/img/icon/heart.png" alt="" /></a>
+                {/* <a href="#" className="search-switch"><img src="/assets/img/icon/search.png" alt="" /></a> */}
+                {/* <a href="#"><img src="/assets/img/icon/heart.png" alt="" /></a> */}
                 {/* <a href="#"><img src="/assets/img/icon/cart.png" alt="" /> <span>0</span></a> */}
                 {/* <li class="d-none d-lg-block"> */}
                 

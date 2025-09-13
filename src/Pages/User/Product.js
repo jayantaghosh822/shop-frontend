@@ -16,19 +16,11 @@ const Product = () =>{
     const [priceRange , setPriceRange] = useState("");
     // const [addToCart , setAddToCart] = useState(false);
     const params = useParams();
-    const calculatePriceRange = ()=>{
-        console.log(selectedSize);
-        if(selectedSize?.price){
-             return `$${selectedSize.price}`;
-        }
-        const priceArr = sizes.map((size,index)=>{
-            return size.price;
-        })
-        return `$${Math.min(...priceArr)} - $${Math.max(...priceArr)}`
-    }
+   
+
     const fetchProduct = async()=>{
           const backendUrl = process.env.REACT_APP_BACKEND_URL;
-            const getProductByID = await axios.get(`${backendUrl}`+`/api/get-product/?proId=${params.p}`);
+            const getProductByID = await axios.get(`${backendUrl}`+`/api/get-product-by-slug/${params.p}`);
             // console.log(getProductByID);
             setProduct(getProductByID.data.result);
             listSizes(getProductByID.data.result.size);
@@ -55,6 +47,8 @@ const Product = () =>{
     },[]);
  
     const [itemsInCart , setItemsInCart] = useState([]);
+    const [selectedAttributes, setSelectedAttributes] = useState({});
+    const [selectedVariation, setSelectedVariation] = useState(null);
     const authuser = useSelector((state) => state.auth.user);
     console.log("category Page user",authuser);
     const dispatch = useDispatch();
@@ -68,20 +62,15 @@ const Product = () =>{
         //         draggable: true,
         //         progress: undefined,
         //     });
-        console.log(selectedSize);
+        // console.log(selectedVariation);
         try{
-        if(!params.p || !product.name || !selectedSize.size || !selectedSize.price){
+        // if(!params.p || !product.name || !selectedSize.size || !selectedSize.price){
 
-            return;
-        }
+        //     return;
+        // }
         const productData = {
-            'product': params.p,
-            'metaData':{
-                'name': product.name,
-                'size': selectedSize.size,
-                'sizeId':selectedSize._id
-            },
-            'price': selectedSize.price,
+            'productId': product._id,
+            'variation':selectedVariation._id,
             'quan':1
             
         };
@@ -121,15 +110,11 @@ const Product = () =>{
             //     }
             // });
         }else{
+            console.log(selectedVariation);
             const tempId = `temp_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
             itemData = {
-                'product': params.p,
-                'metaData':{
-                    'name': product.name,
-                    'size': selectedSize.size,
-                    'sizeId':selectedSize._id
-                },
-                'price': selectedSize.price,
+                'productId': product._id,
+                'variationId':selectedVariation._id,
                 'quan':1
             }
             // setItemsInCart(prev=>{
@@ -173,8 +158,40 @@ const Product = () =>{
         
     }
     let accumulatedPath = '';
-    console.log(product);
+    // console.log(selectedVariation);
 
+   
+
+    // When attribute is selected
+    const handleAttributeSelect = (attrName, value) => {
+        const updated = { ...selectedAttributes, [attrName]: value };
+        setSelectedAttributes(updated);
+
+        // Try to find variation that matches all selected attributes
+        const matchedVariation = product.variations?.find(v =>
+            Object.entries(updated).every(([key, val]) => v.attributes[key] === val)
+        );
+        setSelectedVariation(matchedVariation || null);
+        // console.log("product",product);
+        // console.log("selectedVariation",selectedVariation);
+        // calculatePriceRange(product, selectedVariation);
+    };
+
+    // console.log(selectedAttributes);
+    console.log(selectedVariation);
+    // Calculate price
+    const calculatePriceRange = (product, selectedVariation) => {
+        if (!product?.variations?.length) return null;
+
+        if (selectedVariation?.price) {
+            return `$${selectedVariation.price}`;
+        }
+
+        const prices = product.variations.map(v => v.price);
+        const min = Math.min(...prices);
+        const max = Math.max(...prices);
+        return min === max ? `$${min}` : `$${min} - $${max}`;
+    };
     return(
         <>
             {/* Shop Details Section Begin */}
@@ -263,7 +280,7 @@ const Product = () =>{
                             <span> - 5 Reviews</span>
                         </div>
                         <h3>
-                            {calculatePriceRange()}
+                            {calculatePriceRange(product,selectedVariation)}
                         </h3>
                         <p>
                             Coat with quilted lining and an adjustable hood. Featuring long
@@ -272,22 +289,27 @@ const Product = () =>{
                         </p>
 
                         <div className="product__details__option">
-                            {sizes && (
-                            <div className="product__details__option__size">
-                                <span>Size:</span>
-                                {sizes.map((size, index) => (
-                                <label key={index} htmlFor={`size-${index}`} onClick={(e)=>{setSelectedSize(size) }} class={size==selectedSize?'active':''}>
-                                    {size.size}
-                                    {/* <input type="radio" id={`size-${index}`} name="product-size" /> */}
-                                </label>
-                                ))}
-                            </div>
-                            )}
-
-                            {/*  */}
+                            {product?.attributes?.map((attr) => (
+                                <div key={attr._id} className="product__details__option__size">
+                                <span>{attr.name}:</span>
+                                {attr.values.map((value, index) => {
+                                    const isActive = selectedAttributes[attr.name] === value;
+                                    return (
+                                    <label
+                                        key={index}
+                                        onClick={() => handleAttributeSelect(attr.name, value)}
+                                        className={isActive ? "active" : ""}
+                                    >
+                                        {value}
+                                    </label>
+                                    );
+                                })}
+                                </div>
+                            ))}
                         </div>
+
                         {/* {console} */}
-                        <div className={`product__details__cart__option ${Object.keys(selectedSize).length > 0 ? '' : 'disabled'}`}>
+                        <div className={`product__details__cart__option ${selectedVariation ? '' : 'disabled'}`}>
                             
                             <a href="" className="primary-btn" onClick={(e)=>{e.preventDefault(); addToCart()}}>
                             add to cart
