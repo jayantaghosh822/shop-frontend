@@ -70,7 +70,7 @@ const Product = () =>{
         // }
         const productData = {
             'productId': product._id,
-            'variation':selectedVariation._id,
+            'variationId':selectedVariation._id,
             'quan':1
             
         };

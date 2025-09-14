@@ -360,7 +360,10 @@ const Header = () => {
     
     useEffect(() => {
         console.log(cart);
-        getCartItems();
+        if(cart.items.length>0){
+            getCartItems();
+        }
+        
     }, [cart]);
 
     const getCartItems = async () => {
@@ -497,12 +500,12 @@ const Header = () => {
                     <li key={i} className="list-group-item d-flex justify-content-between lh-sm align-items-center">
                         <div className="d-flex align-items-center">
                             <img
-                                src={`${item.variation.product.image}`} // <- Ensure you have `image` in your cart item's metaData
+                                src={`${item.product.image}`} // <- Ensure you have `image` in your cart item's metaData
                                 
                                 style={{ width: '60px', height: '60px', objectFit: 'cover', marginRight: '10px', borderRadius: '8px' }}
                             />
                             <div>
-                                <h6 className="my-0">{item.variation.product.name}</h6>
+                                <h6 className="my-0">{item.product.name}</h6>
                                 <small className="text-body-secondary">
                                     {Object.entries(item.variation.attributes).map(([key, value]) => (
                                         <span key={key}>
@@ -627,7 +630,9 @@ const Header = () => {
             <a href="#" onClick={(e) => { e.preventDefault(); RegisterFormToggle(); }}>{authuser?(authuser.name):'Sign up'}</a>
             <a href="#" onClick={(e) => { e.preventDefault(); LoginFormToggle(); }}>Sign in</a>
             <a href="#" hidden={displaynameState}>{authuser?(authuser.displayName):''}</a>
-            <a href="#">Logout</a>
+            <a href="" onClick={(e) => { e.preventDefault(); LogOut(); }}>
+                Logout
+            </a>
             </div>
             <div className="offcanvas__top__hover">
             <span>Usd <i className="arrow_carrot-down" /></span>
@@ -680,7 +685,7 @@ const Header = () => {
                     {
                         authuser && (
                             <>
-                                <a href="#" onClick={LogOut}>Logout</a>
+                                <a href="" onClick={(e) => { e.preventDefault(); LogOut(); }}>Logout</a>
                             </>
                         )
                     }
