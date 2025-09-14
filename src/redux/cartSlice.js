@@ -80,7 +80,10 @@ const cartSlice = createSlice({
     builder
       .addCase(fetchCart.fulfilled, (state, action) => {
         console.log(action.payload);
-        state.items = action.payload.items;
+        if(action.payload!=null){
+          state.items = action.payload.items;
+        }
+        
       });
   }
 });

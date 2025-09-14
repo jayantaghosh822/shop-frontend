@@ -21,11 +21,11 @@ const Header = () => {
     const location = useLocation();
     const preloaderRef = useRef(null);
     const loaderRef = useRef(null);
-    useEffect(()=>{
-        // setPreLoader(true);
-        preloaderRef.current.removeAttribute("style");
-        loaderRef.current.removeAttribute("style");
-    },[location])
+    // useEffect(()=>{
+    //     // setPreLoader(true);
+    //     preloaderRef.current.removeAttribute("style");
+    //     loaderRef.current.removeAttribute("style");
+    // },[location])
     const registerRef = useRef(null);
     const loginRef = useRef(null);
     useEffect(() => {
@@ -338,6 +338,7 @@ const Header = () => {
             alert("logging out ");
             dispatch(logout());
             dispatch(cleanCart());
+            setCartData([]);
         })
         
         // setProfile(null);
@@ -618,10 +619,11 @@ const Header = () => {
             </div>
         </div>
         {/* Page Preloder */}
-        <div id="preloder"  ref={preloaderRef} >
+        {/* <div id="preloder"  ref={preloaderRef} >
             <div className="loader" ref={loaderRef} />
-        </div>
+        </div> */}
         {/* Offcanvas Menu Begin */}
+        {console.log('headre user',authuser)}
         <div className="offcanvas-menu-overlay" />
         <div className="offcanvas-menu-wrapper">
         <div className="offcanvas__option">
@@ -668,7 +670,7 @@ const Header = () => {
                 <div className="col-lg-6 col-md-5">
                 <div className="header__top__right">
                     <div className="header__top__links">
-                    <a href="#" >{authuser?(authuser.firstname):''}</a>
+                    <a href="#" >{authuser?(authuser.displayname):''}</a>
                     {/* {console.log(authuser)} */}
                     {
                     (!authuser) && (

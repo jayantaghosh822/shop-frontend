@@ -10,7 +10,10 @@ import { Outlet, Link } from "react-router-dom";
 const Cart = ()=>{
     const authuser = useSelector((state) => state.auth.user);
     const reduxCart = useSelector((state) => state.cart);
-    const [cart , setCart] = useState([]);
+    const [cart , setCart] = useState({
+      cartId:'',
+      structuredCart:[]
+    });
     // const [cartTotal , setTotal] = useState(0);
     // const calculate =(cart)=>{
     //     console.log(cart.items);
@@ -211,6 +214,50 @@ const Cart = ()=>{
   </section>
   {/* Breadcrumb Section End */}
   {/* Shopping Cart Section Begin */}
+  {console.log('before empty caty',cart)}
+  {cart && Array.isArray(cart.structuredCart) && cart.structuredCart.length === 0 && (
+    <div 
+      style={{ 
+        display: "flex", 
+        flexDirection: "column", 
+        justifyContent: "center", 
+        alignItems: "center", 
+        minHeight: "100vh", // full screen height
+        textAlign: "center",
+        paddingBottom: "80px" // optional spacing from footer
+      }}
+    >
+      <img
+        src="/assets/vecteezy_ecommerce-shopping-trolly-flat-concept-design_16073190.jpg"
+        alt="Empty Cart"
+        style={{ maxWidth: "400px", maxHeight: "300px", objectFit: "contain" }}
+      />
+      <h2 style={{ marginTop: "20px", fontSize: "1.5rem", color: "#333" }}>
+        Your shopping cart is empty
+      </h2>
+      <button 
+        style={{ 
+          marginTop: "20px", 
+          padding: "12px 24px", 
+          backgroundColor: "#007bff", 
+          color: "#fff", 
+          border: "none", 
+          borderRadius: "8px", 
+          cursor: "pointer",
+          fontSize: "1rem"
+        }}
+        onClick={() => window.location.href = "/"} 
+      >
+        Continue Shopping
+      </button>
+    </div>
+  )}
+
+
+
+
+
+  {cart && Array.isArray(cart.structuredCart) && cart.structuredCart.length>0 &&(
   <section className="shopping-cart spad">
     <div className="container">
       <div className="row">
@@ -320,6 +367,7 @@ const Cart = ()=>{
       </div>
     </div>
   </section>
+  )}
   {/* Shopping Cart Section End */}
 </>
 
