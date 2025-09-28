@@ -1,203 +1,235 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import axiosInstance from '../../Interceptor/axiosInstance'; // path to your interceptor file
 import { useDispatch } from "react-redux";
-import { loginSuccess,logout,loginPopup } from "../../redux/authSlice";
-import { useLocation } from 'react-router-dom';
+import { useLocation } from "react-router-dom";
+import axiosInstance from "../../Interceptor/axiosInstance";
+import { loginPopup } from "../../redux/authSlice";
 
-const StripePayment = () =>{
-    const [orderDetails , setOrderDetails] = useState(null);
-        const location = useLocation();
-        const queryParams = new URLSearchParams(location.search);
-        const sessionId = queryParams.get('session_id');
-        const [orderTotal , setOrderTotal] = useState(0);
-        useEffect(()=>{
-           
-            const script = document.createElement("script");
-                    const src = '/assets/js/main.js';
-                    script.src = src;
-                    script.async = true;
-                    script.onload = () => {
-                        console.log(`${src} loaded.`);
-                        if (window.jQuery) {
-                        window.$ = window.jQuery; // Ensure jQuery is globally available
-                        }
-                        // if (onLoadCallback) onLoadCallback();
-                    };
-            script.onerror = () => console.error(`Error loading ${src}`);
-            document.body.appendChild(script);
-            fetchOrder();
-            
+const StripePayment = () => {
+  const [orderDetails, setOrderDetails] = useState(null);
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const sessionId = queryParams.get("session_id");
+  const dispatch = useDispatch();
 
+  useEffect(() => {
+    const script = document.createElement("script");
+    const src = "/assets/js/main.js";
+    script.src = src;
+    script.async = true;
+    script.onload = () => {
+      console.log(`${src} loaded.`);
+      if (window.jQuery) {
+        window.$ = window.jQuery;
+      }
+    };
+    script.onerror = () => console.error(`Error loading ${src}`);
+    document.body.appendChild(script);
 
-        },[]);
+    fetchOrder();
+  }, []);
 
-        useEffect(()=>{
-            if (orderDetails && Array.isArray(orderDetails.items) && orderDetails.items.length > 0) {
-                let total = 0;
-                (orderDetails.items).map((item , index)=>{
-                    total = total + item.price*item.quan;
-                })
-                console.log(total);
-                setOrderTotal(total);
-            }
-        },[orderDetails])
-        const dispatch = useDispatch();
-        const fetchOrder = async()=>{
-            try{
-                const fetchPaymentDetails = await axiosInstance.get(`/api/stripe-payment-status/${sessionId}`);
-                console.log(fetchPaymentDetails);
-                // setOrderDetails(fetchOrder.data.order);
-            }catch(err){
-                console.log(err);
-                if(err.response.status == 403 || err.response.status == 401)
-                {
-                    console.error("User not logged in or token expired", err);
-                    dispatch(loginPopup({ showForm: true }));
-                }
-            }
-           
-        }
-        console.log(orderDetails);
-    return(
+  const fetchOrder = async () => {
+    try {
+      const res = await axiosInstance.get(
+        `/api/stripe-payment-status/${sessionId}`
+      );
+      console.log("Fetched order:", res.data);
+      setOrderDetails(res.data); // assuming backend returns the order JSON
+    } catch (err) {
+      console.log(err);
+      if (err.response?.status === 403 || err.response?.status === 401) {
+        console.error("User not logged in or token expired", err);
+        dispatch(loginPopup({ showForm: true }));
+      }
+    }
+  };
+
+  if (!orderDetails) {
+    return <p className="text-center mt-5">Loading invoice...</p>;
+  }
+
+  const { seller, customer, shippingAddress, invoiceDate, orderNo, items, subTotal, discount , shipping, tax, total, status } = orderDetails;
+
+  return (
     <>
-        <div className="container-fluid">
-            <div className="container">
-                {/* Title */}
-                <div className="d-flex justify-content-between align-items-center py-3">
-                <h2 className="h5 mb-0">
-                    <a href="#" className="text-muted" /> Order #{}
-                </h2>
+      <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.1/css/all.min.css"
+        integrity="sha256-2XFplPlrFClt0bIdPgpz8H7ojnk10H69xRqd9+uTShA="
+        crossOrigin="anonymous"
+      />
+      <div className="container">
+        <div className="row">
+          <div className="col-lg-12">
+            <div className="card">
+              <div className="card-body">
+                {/* Invoice Header */}
+                <div className="invoice-title">
+                  <h4 className="float-end font-size-15">
+                    Invoice {orderNo}{" "}
+                    <span className="badge bg-success font-size-12 ms-2">
+                      {status}
+                    </span>
+                  </h4>
+                  <div className="mb-4">
+                    <h2 className="mb-1 text-muted">{seller.name}</h2>
+                  </div>
+                  <div className="text-muted">
+                    <p className="mb-1">{seller.address}</p>
+                    <p className="mb-1">
+                      <i className="uil uil-envelope-alt me-1" /> {seller.email}
+                    </p>
+                    <p>
+                      <i className="uil uil-phone me-1" /> {seller.phone}
+                    </p>
+                  </div>
                 </div>
-                {/* Main content */}
-                <div className="row">
-                <div className="col-lg-12">
-                    {/* Details */}
-                    <div className="card mb-4">
-                    <div className="card-body">
-                        <div className="mb-3 d-flex justify-content-between">
-                        <div>
-                            <span className="me-3">{orderDetails?.createdAt && new Date(orderDetails.createdAt).toLocaleDateString()} {orderDetails?.createdAt && new Date(orderDetails.createdAt).toLocaleTimeString()}</span>
-                            <span className="me-3">#{}</span>
-                            <span className="me-3">{orderDetails?.paymentMethod}</span>
-                            <span className="badge rounded-pill bg-info">SHIPPING</span>
-                        </div>
-                        <div className="d-flex">
-                            <button className="btn btn-link p-0 me-3 d-none d-lg-block btn-icon-text">
-                            <i className="bi bi-download" />{" "}
-                            <span className="text">Invoice</span>
-                            </button>
-                            <div className="dropdown">
-                            <button
-                                className="btn btn-link p-0 text-muted"
-                                type="button"
-                                data-bs-toggle="dropdown"
-                            >
-                                <i className="bi bi-three-dots-vertical" />
-                            </button>
-                            <ul className="dropdown-menu dropdown-menu-end">
-                                <li>
-                                <a className="dropdown-item" href="#">
-                                    <i className="bi bi-pencil" /> Edit
-                                </a>
-                                </li>
-                                <li>
-                                <a className="dropdown-item" href="#">
-                                    <i className="bi bi-printer" /> Print
-                                </a>
-                                </li>
-                            </ul>
-                            </div>
-                        </div>
-                        </div>
-                        <table className="table table-borderless">
-                        <tbody>
-                            {console.log(orderDetails)}
-                            {orderDetails && Array.isArray(orderDetails.items) && orderDetails.items.map((item)=>{
-                                return(
-                                    <tr>
-                                        <td>
-                                            <div className="d-flex mb-2">
-                                            <div className="flex-shrink-0">
-                                                <img
-                                                src={item.image}
-                                                alt=""
-                                                width={35}
-                                                className="img-fluid"
-                                                />
-                                            </div>
-                                            <div className="flex-lg-grow-1 ms-3">
-                                                <h6 className="small mb-0">
-                                                
-                                                {item.metaData.name}
-                                                
-                                                </h6>
-                                                <span className="small">Size: {item.metaData.size}</span>
-                                            </div>
-                                            </div>
-                                        </td>
-                                        <td>{item.quan}</td>
-                                        <td className="text-end">${item.quan * item.price}</td>
-                                    </tr>
-                                )
-                            })}
-                            
 
-                        </tbody>
-                        {console.log(orderTotal)}
-                        <tfoot>
-                            <tr>
-                            <td colSpan={2}>Subtotal</td>
-                            <td className="text-end">${orderTotal}</td>
-                            </tr>
-                            <tr>
-                            <td colSpan={2}>Shipping</td>
-                            <td className="text-end">$20.00</td>
-                            </tr>
-                            
-                            <tr className="fw-bold">
-                            <td colSpan={2}>TOTAL</td>
-                            <td className="text-end">${orderTotal+20}</td>
-                            </tr>
-                        </tfoot>
-                        </table>
+                <hr className="my-4" />
+
+                {/* Customer & Order Info */}
+                <div className="row">
+                  <div className="col-sm-6">
+                    <div className="text-muted">
+                      <h5 className="font-size-16 mb-3">Billed To:</h5>
+                      <h5 className="font-size-15 mb-2">{customer.name}</h5>
+                      <p className="mb-1">
+                        {customer.addressLine1}, {customer.addressLine2}
+                      </p>
+                      <p className="mb-1">{customer.email}</p>
+                      <p>{customer.phone}</p>
                     </div>
+                  </div>
+
+                  <div className="col-sm-6">
+                    <div className="text-muted text-sm-end">
+                      <div>
+                        <h5 className="font-size-15 mb-1">Invoice No:</h5>
+                        <p>{orderNo}</p>
+                      </div>
+                      <div className="mt-4">
+                        <h5 className="font-size-15 mb-1">Invoice Date:</h5>
+                        <p>{invoiceDate}</p>
+                      </div>
+                      <div className="mt-4">
+                        <h5 className="font-size-15 mb-1">Shipping To:</h5>
+                        <p>
+                          {shippingAddress.name}, {shippingAddress.addressLine1},{" "}
+                          {shippingAddress.addressLine2}, {shippingAddress.city},{" "}
+                          {shippingAddress.state} - {shippingAddress.postalCode},{" "}
+                          {shippingAddress.country}
+                        </p>
+                      </div>
                     </div>
-                    {/* Payment */}
-                    <div className="card mb-4">
-                    <div className="card-body">
-                        <div className="row">
-                        <div className="col-lg-6">
-                            <h3 className="h6">Payment Method</h3>
-                            <p>
-                            {orderDetails?.paymentMethod} <br />
-                            Total: ${orderTotal+20}{" "}
-                            <span className="badge bg-success rounded-pill">{orderDetails?.orderStatus}</span>
-                            </p>
-                        </div>
-                        <div className="col-lg-6">
-                            <h3 className="h6">Billing address</h3>
-                            <address>
-                            
-                            <strong>{orderDetails?.shippingAddress?.name}</strong>
-                            <br />
-                            {orderDetails?.shippingAddress?.addressLine1} {orderDetails?.shippingAddress?.addressLine2}
-                            <br />
-                            {orderDetails?.shippingAddress?.city} {orderDetails?.shippingAddress?.state} {orderDetails?.shippingAddress?.country}
-                            <br />
-                            <abbr title="Phone">M:</abbr> {orderDetails?.shippingAddress?.phone}
-                            </address>
-                        </div>
-                        </div>
-                    </div>
-                    </div>
+                  </div>
                 </div>
-                
+
+                {/* Order Items */}
+                <div className="py-2">
+                  <h5 className="font-size-15">Order Summary</h5>
+                  <div className="table-responsive">
+                    <table className="table align-middle table-nowrap table-centered mb-0">
+                      <thead>
+                        <tr>
+                          <th style={{ width: 70 }}>No.</th>
+                          <th>Item</th>
+                          <th>Price</th>
+                          <th>Quantity</th>
+                          <th className="text-end" style={{ width: 120 }}>
+                            Total
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {items.map((item, index) => (
+                          <tr key={item.id}>
+                            <th scope="row">{index + 1}</th>
+                            <td>
+                              <div>
+                                <h5 className="text-truncate font-size-14 mb-1">
+                                  {item.description}
+                                </h5>
+                              </div>
+                            </td>
+                            <td>
+                              ₹ {(item.price.unit_amount / 100).toFixed(2)}
+                            </td>
+                            <td>{item.quantity}</td>
+                            <td className="text-end">
+                              ₹ {((item.price.unit_amount * item.quantity) / 100).toFixed(2)}
+                            </td>
+                          </tr>
+                        ))}
+
+                        {/* Totals */}
+                        <tr>
+                          <th colSpan={4} className="text-end">
+                            Sub Total
+                          </th>
+                          <td className="text-end">
+                            ₹ {(subTotal / 100).toFixed(2)}
+                          </td>
+                        </tr>
+                        <tr>
+                          <th colSpan={4} className="border-0 text-end">
+                            Discount :
+                          </th>
+                          <td className="border-0 text-end">₹ {discount}</td>
+                        </tr>
+                        <tr>
+                          <th colSpan={4} className="border-0 text-end">
+                            Shipping :
+                          </th>
+                          <td className="border-0 text-end">₹ {shipping/100}</td>
+                        </tr>
+                        <tr>
+                          <th colSpan={4} className="border-0 text-end">
+                            Tax :
+                          </th>
+                          <td className="border-0 text-end">₹ {tax}</td>
+                        </tr>
+                        <tr>
+                          <th colSpan={4} className="border-0 text-end">
+                            Total
+                          </th>
+                          <td className="border-0 text-end">
+                            <h4 className="m-0 fw-semibold">
+                              ₹ {(total / 100).toFixed(2)}
+                            </h4>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Print & Send Buttons */}
+                  <div className="d-print-none mt-4">
+                    <div className="float-end">
+                      <a
+                        href="javascript:window.print()"
+                        className="btn btn-success me-1"
+                      >
+                        <i className="fa fa-print" />
+                      </a>
+                      <a
+                        href={orderDetails.stripeReceiptUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="btn btn-primary w-md"
+                      >
+                        View Stripe Receipt
+                      </a>
+                    </div>
+                  </div>
                 </div>
+                {/* End Summary */}
+              </div>
             </div>
+          </div>
         </div>
+      </div>
     </>
-    )
-}
+  );
+};
 
 export default StripePayment;
