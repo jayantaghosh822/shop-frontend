@@ -3,6 +3,8 @@ import { useDispatch } from "react-redux";
 import { useLocation } from "react-router-dom";
 import axiosInstance from "../../Interceptor/axiosInstance";
 import { loginPopup } from "../../redux/authSlice";
+import { useRef } from "react";
+import html2pdf from "html2pdf.js"
 
 const StripePayment = () => {
   const [orderDetails, setOrderDetails] = useState(null);
@@ -10,6 +12,7 @@ const StripePayment = () => {
   const queryParams = new URLSearchParams(location.search);
   const sessionId = queryParams.get("session_id");
   const dispatch = useDispatch();
+  const invoiceRef = useRef();
 
   useEffect(() => {
     const script = document.createElement("script");
@@ -49,7 +52,18 @@ const StripePayment = () => {
   }
 
   const { seller, customer, shippingAddress, invoiceDate, orderNo, items, subTotal, discount , shipping, tax, total, status } = orderDetails;
-
+  
+  const handleDownloadPDF = () => {
+    const element = invoiceRef.current;
+    const options = {
+      margin: 0.5,
+      filename: `invoice-${orderDetails.orderNo}.pdf`,
+      image: { type: "jpeg", quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: "in", format: "a4", orientation: "portrait" },
+    };
+    html2pdf().set(options).from(element).save();
+  };
   return (
     <>
       <link
@@ -205,12 +219,12 @@ const StripePayment = () => {
                   {/* Print & Send Buttons */}
                   <div className="d-print-none mt-4">
                     <div className="float-end">
-                      <a
-                        href="javascript:window.print()"
-                        className="btn btn-success me-1"
-                      >
+                      <button onClick={() => window.print()} className="btn btn-success me-1">
                         <i className="fa fa-print" />
-                      </a>
+                      </button>
+                      {/* <button onClick={handleDownloadPDF} className="btn btn-danger w-md">
+                        Download PDF
+                      </button> */}
                       <a
                         href={orderDetails.stripeReceiptUrl}
                         target="_blank"

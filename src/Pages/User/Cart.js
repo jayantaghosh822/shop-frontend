@@ -153,9 +153,13 @@ const Cart = ()=>{
     }
     console.log(cartTotal);
 
+    const [quantityUpdateButton , setUpdating] = useState(false);
     // 🔹 Update item quantity in backend
     const updateQuan = async (id, type) => {
+      if (quantityUpdateButton) return; // prevent double click
+      setUpdating(true);
       try {
+        
         const cartItems = await axiosInstance.patch(`/api/update-item/${id}`, {
           action: type, // "inc" or "dec"
         });
@@ -168,19 +172,24 @@ const Cart = ()=>{
           dispatch(loginPopup({ showForm: true }));
         }
       }
+      setUpdating(false);
     };
 
+   
     // 🔹 Increase quantity
     const incQuan = async (id) => {
       try {
+        if(quantityUpdateButton) return;
         await updateQuan(id, "inc");
       } catch (err) {
         console.error("Error increasing quantity:", err);
       }
+     
     };
 
     // 🔹 Decrease quantity
     const decQuan = async (id,quan) => {
+      if(quantityUpdateButton) return;
       if(quan<2)
         return;
       try {
@@ -188,6 +197,7 @@ const Cart = ()=>{
       } catch (err) {
         console.error("Error decreasing quantity:", err);
       }
+      setUpdating(false);
     };
 
 
@@ -332,23 +342,23 @@ const Cart = ()=>{
                 <Link to="/">Continue Shopping</Link>
               </div>
             </div>
-            <div className="col-lg-6 col-md-6 col-sm-6">
+            {/* <div className="col-lg-6 col-md-6 col-sm-6">
               <div className="continue__btn update__btn">
                 <a href="#" onClick={(e)=>{e.preventDefault(); updateCart();}}>
                   <i className="fa fa-spinner"/> Update cart
                 </a>
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
         <div className="col-lg-4">
-          <div className="cart__discount">
+          {/* <div className="cart__discount">
             <h6>Discount codes</h6>
             <form action="#">
               <input type="text" placeholder="Coupon code" />
               <button type="submit">Apply</button>
             </form>
-          </div>
+          </div> */}
           <div className="cart__total">
             <h6>Cart total</h6>
             <ul>

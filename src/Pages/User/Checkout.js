@@ -4,18 +4,37 @@ import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
 import { loginSuccess,logout,loginPopup } from "../../redux/authSlice";
 import { useNavigate } from 'react-router-dom';
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const CheckOut = ()=>{
 
-    const [userDetails , setUserDetails] = useState({});
+    const [userDetails, setUserDetails] = useState({
+      firstname: "",
+      lastname: "",
+      email: "",
+      userType: "customer", // can set default if needed
+      streetaddress: "",
+      appartment: "",
+      city: "",
+      state: "",
+      pin: "",
+      phone: ""
+    });
+    console.log(userDetails);
     const authuser = useSelector((state) => state.auth.user);
-    const cart = useSelector((state) => state.cart);
-    const [paymentMethod , setPaymentMethod] = useState(null);
+    const reduxCart = useSelector((state) => state.cart);
+    const [cart , setCart] = useState({
+      cartId:'',
+      structuredCart:[]
+    });
+    const [paymentMethod , setPaymentMethod] = useState('stripe');
+    
     const dispatch = useDispatch();
     // console.log(authuser);
-    useEffect(()=>{
-        setUserDetails(authuser);
-    },[authuser]);
+    // useEffect(()=>{
+    //     setUserDetails(authuser);
+    // },[authuser]);
     const [cartTotal , setCartTotal] = useState(0);
     useEffect(()=>{
 
@@ -38,17 +57,54 @@ const CheckOut = ()=>{
         // fetchCart();
         // calculate(cart);
      
-      if (Array.isArray(cart.items) && cart.items.length > 0) {
+      if (Array.isArray(cart.structuredCart) && cart.structuredCart.length > 0) {
           let total = 0;
-          (cart.items).map((item , index)=>{
-              total = total + item.price*item.quan;
+          (cart.structuredCart).map((item , index)=>{
+              total = total + item.variation.price*item.quan;
           })
           console.log(cartTotal);
           setCartTotal(total);
       }
-      console.log(cartTotal);
+      console.log("checkoutcarttotal",cartTotal);
 
     },[cart]);
+
+        const getCartItems = async () => {
+              try{
+                    const backendUrl = process.env.REACT_APP_BACKEND_URL;
+                    const cartData = await axiosInstance.post(
+                        `${backendUrl}/api/get-user-cart-data`,
+                        { cart:reduxCart },   // body
+                        { withCredentials: true } // config
+                    );
+        
+                console.log(cartData.data);
+                if(authuser){
+                  setCart(cartData.data);
+                }else{
+                  setCart([]);
+                }
+              }catch(err){
+            
+                if(err.response.status == 403 || err.response.status == 401)
+                {
+                  console.error("User not logged in or token expired", err);
+                  dispatch(loginPopup({ showForm: true }));
+                }
+    
+              }
+                
+        };
+        useEffect(()=>{
+          console.log(reduxCart);
+          if(!authuser){
+            setCart([]);
+          }
+          if(Array.isArray(reduxCart.items)){
+            console.log('oklkkkkkkkk');
+              getCartItems();
+          }
+        },[reduxCart]);
     
     const handleUserDetailsChangeForm = (e)=>{
         const {name,value} = e.target;
@@ -74,34 +130,64 @@ const CheckOut = ()=>{
       }
       // setPaymentMethod
     }
-    console.log(paymentMethod);
+    
     const navigate = useNavigate();
-    const placeOrder = async()=>{
-      try{
-        const order = await axiosInstance.post(`/api/place-order/`,{
-          paymentMethod:paymentMethod,
-          userDetails:userDetails
+    const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+
+    const validateUserDetails = (userDetails) => {
+      for (const [key, value] of Object.entries(userDetails)) {
+        if (!value || value.toString().trim() === "") {
+          return { isValid: false, field: key };
+        }
+      }
+      return { isValid: true };
+    };
+    const placeOrder = async () => {
+      if (isPlacingOrder) return; // prevent double click
+      setIsPlacingOrder(true);
+
+      try {
+        console.log('checkoutdetails',userDetails);
+        const fieldsCheck = validateUserDetails(userDetails);
+        console.log(fieldsCheck);
+        if(!fieldsCheck.isValid){
+            toast.error('Incomplete Fields', {
+                            position: "top-right",
+                            autoClose: 3000,
+                            hideProgressBar: false,
+                            closeOnClick: true,
+                            pauseOnHover: true,
+                            draggable: true,
+                            progress: undefined,
+              });
+              return;
+        }
+       
+        const order = await axiosInstance.post(`/api/place-order/`, {
+          paymentMethod,
+          userDetails,
         });
+
         console.log(order);
-        if(order.status == 201){
-          if(order.data.paymentMethod == 'cod'){
+
+        if (order.status === 201) {
+          if (order.data.paymentMethod === "cod") {
             navigate(`/order-successful/${order.data.orderId}`);
-          }else if(order.data.paymentMethod == 'stripe'){
+          } else if (order.data.paymentMethod === "stripe") {
             window.location.href = order.data.paymentUrl;
           }
-         
         }
-        // dispatch(fetchCartReducer(cartItems.data.cartItems));
-      }catch(err){
+      } catch (err) {
         console.error(err);
-        if(err.response.status == 403 || err.response.status == 401)
-          {
-            console.error("User not logged in or token expired", err);
-            dispatch(loginPopup({ showForm: true }));
-          }
-
+        if (err.response?.status === 403 || err.response?.status === 401) {
+          console.error("User not logged in or token expired", err);
+          dispatch(loginPopup({ showForm: true }));
+        }
+      } finally {
+        setIsPlacingOrder(false); // reset after request finishes
       }
-    }
+    };
+
     return (
       <div>
         {/* Breadcrumb Section Begin */}
@@ -181,19 +267,7 @@ const CheckOut = ()=>{
                         </div>
                       </div>
                     </div>
-                    {/* <div className="checkout__input__checkbox">
-                      <label htmlFor="acc">
-                        Create an account?
-                        <input type="checkbox" id="acc" />
-                        <span className="checkmark" />
-                      </label>
-                      <p>Create an account by entering the information below. If you are a returning customer
-                        please login at the top of the page</p>
-                    </div> */}
-                    {/* <div className="checkout__input">
-                      <p>Account Password<span>*</span></p>
-                      <input type="text" />
-                    </div> */}
+                    
                     <div className="checkout__input__checkbox">
                       <label htmlFor="diff-acc">
                         Note about your order, e.g, special noe for delivery
@@ -210,11 +284,11 @@ const CheckOut = ()=>{
                     <div className="checkout__order">
                       <h4 className="order__title">Your order</h4>
                       <div className="checkout__order__products">Product <span>Total</span></div>
-                      {/* {console.log(cart)} */}
+                      {console.log("checkout cart",cart)}
                       <ul className="checkout__total__products">
-                        {cart && Array.isArray(cart.items) && cart.items.length>0 && cart.items.map((item , ind)=>{
+                        {cart && Array.isArray(cart.structuredCart) && cart.structuredCart.length>0 && cart.structuredCart.map((item , ind)=>{
                           return(
-                             <li>{ind+1}. {item.quan} x {item.metaData?.name} <span>$ {item.quan * item.price}</span></li>
+                             <li>{ind+1}. {item.quan} x {item.product?.name} <span>$ {item.quan * item.variation.price}</span></li>
                           )
                           
                         })}
@@ -223,7 +297,8 @@ const CheckOut = ()=>{
                       </ul>
                       <ul className="checkout__total__all">
                         <li>Subtotal <span>${cartTotal}</span></li>
-                        <li>Total <span>${cartTotal}</span></li>
+                        <li>Delivaery Charge <span>$120</span></li>
+                        <li>Total <span>${cartTotal+120}</span></li>
                       </ul>
                       {/* <div className="checkout__input__checkbox">
                         <label htmlFor="acc-or">
@@ -234,18 +309,18 @@ const CheckOut = ()=>{
                       </div> */}
                       
                       <div className="checkout__input__checkbox" >
-                        <label htmlFor="payment">
+                        {/* <label htmlFor="payment">
                           Cash on delivery
                           <input type="checkbox" name="cod" value="cod" id="payment" onChange={(e)=>{addPaymentMethod(e)}} disabled={paymentMethod=='cod'||paymentMethod==null?false:true}/>
                           <span className="checkmark" />
-                        </label>
+                        </label> */}
                       </div>
                       <div className="checkout__input__checkbox" >
-                        <label htmlFor="stripe">
+                        {/* <label htmlFor="stripe">
                           stripe
                           <input type="checkbox" name="stripe" value="stripe" id="stripe" onChange={(e)=>{addPaymentMethod(e)}} disabled={paymentMethod=='stripe'||paymentMethod==null?false:true}/>
                           <span className="checkmark" />
-                        </label>
+                        </label> */}
                       </div>
                       <button type="submit" className="site-btn" onClick={(e)=>{e.preventDefault() ; placeOrder()}}>PLACE ORDER</button>
                     </div>

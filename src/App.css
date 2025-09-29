@@ -345,3 +345,18 @@ background-color:#eee;
     border: 0 solid rgba(0,0,0,.125);
     border-radius: 1rem;
 }
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .card-body * {
+    visibility: visible;
+  }
+  /* #invoice {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  } */
+}

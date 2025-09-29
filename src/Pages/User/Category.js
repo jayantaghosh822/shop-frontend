@@ -106,7 +106,7 @@ const Store = () =>{
                     {/* <h4>Centered Modal</h4> */}
                     <div class="product__details__option__size">
                         <span>Size:</span>
-                        {props.productData.size.map((size)=>{
+                        {props.productData && props.productData.size.map((size)=>{
                             // {console.log(size.size)}
                             return(
                             <label for="xxl" onClick={(e) => {
@@ -686,7 +686,7 @@ const Store = () =>{
                                     <div className="shop__sidebar__brand">
                                     <ul>
                                         {console.log(productBrands)}
-                                        {productBrands.map((brand)=>{
+                                        {productBrands && productBrands.length>0 && productBrands.map((brand)=>{
                                             return(
                                                 <li key={brand}>
                                                     <a
@@ -746,7 +746,7 @@ const Store = () =>{
                                 <div id="collapseFive" className="collapse show" data-parent="#accordionExample">
                                 <div className="card-body">
                                     <div className="shop__sidebar__size">
-                                        {productColors.map((color)=>{
+                                        {productColors && productColors.length>0 && productColors.map((color)=>{
                                             return(
                                                 <label htmlFor="" key={color} className={filterColors.some(c=>color==c)?'box-color active':'box-color'}  onClick={(e) => {
                                                     e.preventDefault();
@@ -834,13 +834,13 @@ const Store = () =>{
                                 </Link>
                                 <div className="product__item__text">
                                     <h6 >{elem.name}</h6>
-                                    {/* {console.log(cart)} */}
+                                    {/* {console.log(cart)}
                                     {(Object.entries(cart.items).some(
                                              ([key, value]) => value.productId==elem._id
                                     ))?
                                     <a href="#" onClick={(e) => {e.preventDefault();}} className="add-cart">Added To Cart</a>:
                                     <a href="#" onClick={(e) => {e.preventDefault();setModalShow(true);setProducModalData(elem);}} className="add-cart">+ Add To Cart</a>
-                                    }
+                                    } */}
                                     {/* <a href="#opneprobox" onClick={() => {setModalShow(true);setProducModalData(elem);}} className="add-cart">+ Add To Cart</a> */}
                                     <div className="rating">
                                     <i className="fa fa-star-o" />
@@ -879,12 +879,12 @@ const Store = () =>{
                 </div>
                 </section>
 
-                <MyVerticallyCenteredModal
+                {/* <MyVerticallyCenteredModal
                     show={modalShow}
                     size="sm"
                     onHide={() => setModalShow(false)}
                     productData={producModalData}
-                />
+                /> */}
                 {/* Shop Section End */}
             </div>
         </>
