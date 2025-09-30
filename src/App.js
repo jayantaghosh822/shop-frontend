@@ -15,7 +15,8 @@ import CreateProduct from './Pages/Admin/CreateProduct';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 // import { googleLogout, useGoogleLogin } from '@react-oauth/google';
 import { useDispatch } from "react-redux";
-import { loginSuccess,logout,loginPopup } from "./redux/authSlice";
+import { loginSuccess,loginChecked , logout,loginPopup } from "./redux/authSlice";
+import { fetchCart,cleanCart } from './redux/cartSlice';
 import React, { useEffect } from "react";
 import axios from 'axios';
 import RequireAuth from './Utils/RequireAuth';
@@ -51,11 +52,21 @@ const App = () => {
         // console.error("User not logged in or token expired", err);
         // dispatch(loginPopup({ showForm: true }));
         // dispatch(logout()); // Optional: in case you want to clear auth state
+        dispatch(loginChecked());
       }
     };
 
     fetchUser();
+    
   }, [dispatch]);
+
+  //   useEffect(() => {
+  //   // const authuser = localStorage.getItem("authToken"); // or however you check
+  //   if (authuser) {
+  //     // logged in → fetch from backend
+  //     dispatch(fetchCart());
+  //   } 
+  // }, [dispatch]);
 
   return (
     <BrowserRouter>
@@ -73,7 +84,7 @@ const App = () => {
           <Route path="store" element={<Store />} />
           <Route path=":category/:subcategory" element={<Store />} />
           <Route path="p/:p" element={<Product />} />
-          <Route path="cart" element={<Cart />} />
+          <Route path="cart" element={<Cart />} /> 
           <Route path="checkout" element={<CheckOut />} />
            <Route path="order-successful/:id" element={<OrderPlaced />} />
            <Route path="stripe-payment/" element={<StripePayment />} />

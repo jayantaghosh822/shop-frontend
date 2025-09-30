@@ -240,6 +240,7 @@ const Header = () => {
                 setdisplayRegister(true);
                 setdisplaylogin(true);
                 dispatch(loginSuccess({ user: userLogin.data.user }));
+                dispatch(fetchCart());
             }
         }catch(err){
             if(err.response.data.error=='email not verified'){
@@ -301,6 +302,7 @@ const Header = () => {
                         showloginForm(false);
                        
                         dispatch(loginSuccess({ user: userLoginByGoogle.data.user }));
+                        dispatch(fetchCart());
                         toast.success(userLoginByGoogle.data.message, {
                             position: "top-right",
                             autoClose: 3000,
@@ -330,27 +332,37 @@ const Header = () => {
     );
 
     // log out function to log the user out of google and set the profile array to null
-    const LogOut = () => {
+    const LogOut = async () => {
         googleLogout();
-        const backendUrl = process.env.REACT_APP_BACKEND_URL;
-        axios.post(backendUrl+'/api/user/log-out', {} , { withCredentials: true })
-        .then(res=>{
+        try {
+            const backendUrl = process.env.REACT_APP_BACKEND_URL;
+            const res = await axios.post(
+            backendUrl + '/api/user/log-out',
+            {},
+            { withCredentials: true }
+            );
             alert("logging out ");
             dispatch(logout());
             dispatch(cleanCart());
             setCartData([]);
-        })
-        
-        // setProfile(null);
+        } catch (err) {
+            console.log(err);
+            if (err.response?.status === 403 || err.response?.status === 401) {
+            dispatch(logout());
+            dispatch(cleanCart());
+            setCartData([]);
+            }
+        }
     };
+
 
     const [cartData, setCartData] = useState([]);
     // const [cartArr , setCartArr] = useState([]);
     const cart = useSelector((state) => state.cart);
     let cartTotal = 0;
     console.log(cart);
-    if (Array.isArray(cartData) && cartData.length > 0) {
-        (cartData).map((item , index)=>{
+    if (Array.isArray(cart.items) && cart.items.length > 0) {
+        (cart.items).map((item , index)=>{
             console.log(item);
             cartTotal = cartTotal + item.quan*item.variation.price;
         })
@@ -359,55 +371,19 @@ const Header = () => {
 
     console.log(cartTotal);
     
-    useEffect(() => {
-        console.log(cart);
-        if(cart.items.length>0){
-            getCartItems();
-        }
-        
-    }, [cart]);
+  
 
-    const getCartItems = async () => {
-        try{
-            const backendUrl = process.env.REACT_APP_BACKEND_URL;
-            const cartData = await axios.post(
-                `${backendUrl}/api/get-cart-data`,
-                { cart },   // body
-                { withCredentials: true } // config
-            );
+const [cartFetched, setCartFetched] = useState(false);
 
-        console.log(cartData.data);
-        setCartData(cartData.data);
-        }catch(err){
-            console.log(err);
-        }
-        
-    };
+useEffect(() => {
+  console.log("beforetofetch", authuser);
+  if (!cartFetched) {
+    setCartFetched(true);
+    dispatch(fetchCart());
+  }
+}, [dispatch, authuser, cartFetched]);
 
 
-    useEffect(() => {
-        const addLocalItemsToCart = async()=>{
-            // console.log(JSON.parse(localStorage.getItem('cartItems')));
-            const backendUrl = process.env.REACT_APP_BACKEND_URL;
-            const unSavedCartItems = JSON.parse(localStorage.getItem('unSavedCartItems'));
-            if(unSavedCartItems){
-            await axios.post(`${backendUrl}/api/add-local-items-to-cart/`, {
-                unSavedCartItems: unSavedCartItems
-                }, {
-                withCredentials: true
-            });
-            localStorage.removeItem('unSavedCartItems');
-            }
-            dispatch(fetchCart());
-            
-        }
-        if (authuser && authuser.email) {
-            // console.log("mu user2",authuser);
-           
-            addLocalItemsToCart();
-            // dispatch(fetchCart());
-        }
-    }, [dispatch, authuser])
     const loginFormPopup = useSelector((state) => state.auth.showLoginForm);
     useEffect(()=>{
        console.log(loginFormPopup);
@@ -495,8 +471,8 @@ const Header = () => {
                 <span class="" style={{ color: '#0e0e0d' }}>({Object.keys(cart.items).length})</span>
                 </h4>
                 <ul class="list-group mb-3">
-                {console.log("cartdataaaa",cartData)}
-                {cartData && Array.isArray(cartData) && cartData.length>0 && cartData.map((item,i)=>(
+                {console.log("cartdataaaa",cart)}
+                {cart && Array.isArray(cart.items) && cart.items.length>0 && cart.items.map((item,i)=>(
                     
                     <li key={i} className="list-group-item d-flex justify-content-between lh-sm align-items-center">
                         <div className="d-flex align-items-center">
@@ -536,7 +512,7 @@ const Header = () => {
                     <span class="text-body-secondary">$5</span>
                 </li> */}
                 <li class="list-group-item d-flex justify-content-between">
-                    <span>Total (USD)</span>
+                    <span>Total</span>
                     <strong>${cartTotal}</strong>
                 </li>
                 </ul>

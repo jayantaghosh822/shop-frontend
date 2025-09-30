@@ -110,21 +110,13 @@ const Product = () =>{
             //     }
             // });
         }else{
-            console.log(selectedVariation);
-            const tempId = `temp_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-            itemData = {
-                'productId': product._id,
-                'variationId':selectedVariation._id,
-                'quan':1
-            }
-            // setItemsInCart(prev=>{
-            //     return{
-            //         ...prev,
-            //         ...itemData
-            //     }
-            // });
-            dispatch(reduxAddToCart({ itemData,authuser }));
-            toast.success('Product Added To Cart', {
+            const backendUrl = process.env.REACT_APP_BACKEND_URL;
+            const addToCart = await axios.post(`${backendUrl}/api/add-to-cart/`, {
+                productData: productData
+              }, {
+                withCredentials: true
+            });
+            toast.success(addToCart.data.message, {
                 position: "top-right",
                 autoClose: 3000,
                 hideProgressBar: false,
@@ -133,6 +125,7 @@ const Product = () =>{
                 draggable: true,
                 progress: undefined,
             });
+            dispatch(fetchCart());
         }
 
         

@@ -6,87 +6,58 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 // In the same file where you're calling createAsyncThunk
 import axiosInstance from '../Interceptor/axiosInstance'; // path to your interceptor file
 // Read cookie on page load (optional helper)
-const savedCart = JSON.parse(localStorage.getItem("savedCartItems")) 
-|| JSON.parse(localStorage.getItem("unSavedCartItems")) 
-|| [];
-console.log("saved items",savedCart);
+
 const initialState = {
-  items: savedCart,
+  items: [],
 };
 
 export const fetchCart = createAsyncThunk(
   "cart/fetchCart",
-  async (userId) => {
-    const res = await axiosInstance.get(`/api/get-cart-items/`);
-    
-    console.log("saved items", res.data.cartItems);
-
-    // localStorage.setItem("savedCartItems", JSON.stringify(res.data.cartItems));
-
-    return res.data.cartItems;
+  async () => {
+    const res = await axiosInstance.get(`/api/get-cart-items`);
+    return res.data || [];
   }
 );
 
-
-
 const cartSlice = createSlice({
-  name: "items",
+  name: "cart",
   initialState,
   reducers: {
     reduxAddToCart: (state, action) => {
-      const newItem = action.payload.itemData; // newItem is already structured like a cart item
+      const newItem = action.payload.itemData;
       const authuser = action.payload.authuser;
-      console.log(JSON.stringify(newItem, null, 2));
-      console.log(JSON.stringify(state.items, null, 2));
-      // console.log(newItem);
+
+      // ✅ Compare product + variation IDs
       const existingIndex = state.items.findIndex(
         (item) =>
-          item.product === newItem.product &&
-          item.variationId == newItem.variationId
+          item.product?.id === newItem.product?.id &&
+          item.variation?.id === newItem.variation?.id
       );
-      console.log(existingIndex);
+
       if (existingIndex !== -1) {
-        // Item exists, update quantity
         state.items[existingIndex].quan += newItem.quan || 1;
       } else {
-        // New item, push to array
         state.items.push(newItem);
       }
 
-      // Save to localStorage
       const key = authuser ? "savedCartItems" : "unSavedCartItems";
-    
-      try {
-        localStorage.setItem(key, JSON.stringify(state.items));
-      } catch (e) {
-        if (e.name === "QuotaExceededError") {
-          console.error("LocalStorage limit exceeded!");
-          alert("Cart data is too large. Please remove some items.");
-        }
-      }
+      localStorage.setItem(key, JSON.stringify(state.items));
     },
-    cleanCart: (state, action) => {
-      localStorage.removeItem("savedCartItems");
+    cleanCart: (state) => {
       state.items = [];
+      localStorage.removeItem("savedCartItems");
+      localStorage.removeItem("unSavedCartItems");
     },
-    fetchCartReducer: (state,action)=>{
-       console.log(action.payload);
-       state.items = action.payload;
+    fetchCartReducer: (state, action) => {
+      state.items = action.payload;
     }
-    
-    
   },
   extraReducers: (builder) => {
-    builder
-      .addCase(fetchCart.fulfilled, (state, action) => {
-        console.log(action.payload);
-        if(action.payload!=null){
-          state.items = action.payload.items;
-        }
-        
-      });
+    builder.addCase(fetchCart.fulfilled, (state, action) => {
+      state.items = action.payload;
+    });
   }
 });
 
-export const { reduxAddToCart,cleanCart,fetchCartReducer } = cartSlice.actions;
+export const { reduxAddToCart, cleanCart, fetchCartReducer } = cartSlice.actions;
 export default cartSlice.reducer;

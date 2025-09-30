@@ -5,6 +5,7 @@ import axiosInstance from '../../Interceptor/axiosInstance'; // path to your int
 import { useDispatch } from "react-redux";
 import { loginSuccess,logout,loginPopup } from "../../redux/authSlice";
 import { fetchCartReducer } from "../../redux/cartSlice";
+import { fetchCart,cleanCart } from '../../redux/cartSlice';
 import { Outlet, Link } from "react-router-dom";
 
 const Cart = ()=>{
@@ -28,46 +29,62 @@ const Cart = ()=>{
     //     }
     //     setTotal(cartTotal);
     // }
-
-    const getCartItems = async () => {
-          try{
-                const backendUrl = process.env.REACT_APP_BACKEND_URL;
-                const cartData = await axiosInstance.post(
-                    `${backendUrl}/api/get-user-cart-data`,
-                    { cart:reduxCart },   // body
-                    { withCredentials: true } // config
-                );
-    
-            console.log(cartData.data);
-            if(authuser){
-              setCart(cartData.data);
-            }else{
-              setCart([]);
-            }
-          }catch(err){
-        
-            if(err.response.status == 403 || err.response.status == 401)
-            {
-              console.error("User not logged in or token expired", err);
-              dispatch(loginPopup({ showForm: true }));
-            }
-
-          }
-            
-    };
-    useEffect(()=>{
-      console.log(reduxCart);
-      if(!authuser){
-        setCart([]);
-      }
-      if(Array.isArray(reduxCart.items)){
-        console.log('oklkkkkkkkk');
-          getCartItems();
-      }
-    },[reduxCart]);
-
-    
     const dispatch = useDispatch();
+    // const getCartItems = async () => {
+    //     if(authuser){
+    //       try{
+    //         const backendUrl = process.env.REACT_APP_BACKEND_URL;
+    //         let cartData = '';
+    //         if(authuser){
+    //              cartData = await axiosInstance.post(
+    //                 `${backendUrl}/api/get-user-cart-data`,
+    //                 { cart:reduxCart },   // body
+    //                 { withCredentials: true } // config
+    //             );
+    //         }
+                
+               
+    
+    //         console.log(cartData.data);
+    //         // if(authuser){
+    //           setCart(cartData.data);
+    //         // }else{
+    //         //   setCart([]);
+    //         // }
+    //       }catch(err){
+        
+    //         if(err.response.status == 403 || err.response.status == 401)
+    //         {
+    //           console.error("User not logged in or token expired", err);
+    //           dispatch(loginPopup({ showForm: true }));
+    //         }
+
+    //       }
+    //     }else{
+    //       //   const backendUrl = process.env.REACT_APP_BACKEND_URL;
+    //       //   let cartData = '';
+    //       //   cartData = await axios.post(
+    //       //     `${backendUrl}/api/get-cart-data`,
+    //       //     { cart:reduxCart },   // body
+    //       //     { withCredentials: true } // config
+    //       //   );
+    //       // setCart(cartData.data);
+    //     }
+            
+    // };
+    // useEffect(()=>{
+    //   console.log(reduxCart);
+    //   // if(!authuser){
+    //   //   setCart([]);
+    //   // }
+    //   if(Array.isArray(reduxCart.items)){
+    //     console.log('oklkkkkkkkk');
+    //       getCartItems();
+    //   }
+    // },[reduxCart]);
+
+    
+    // const dispatch = useDispatch();
     // const fetchCart = async()=>{
     //   try{
     //     const cartItems = await axiosInstance.get(`/api/get-cart-items/`);
@@ -108,18 +125,30 @@ const Cart = ()=>{
 
     },[]);
 
-    const removeItem = async(id) =>{
+    const removeItem = async(id,productId , variationId) =>{
       alert(id);
-      const cartId = cart.cartId;
-      alert(cartId);
+      // const cartId = cart.cartId;
+      // alert(cartId);
       // return;
+      const backendUrl = process.env.REACT_APP_BACKEND_URL;
       try{
-        const itemDelete = await axiosInstance.delete(`/api/remove-cart-item/`,{
-          params:{itemId:id,cartId:cartId}
-        });
+        if(authuser){
+          await axios.delete(backendUrl+`/api/remove-cart-item`, {
+            params: { itemId: id },
+            withCredentials: true 
+          });
+        }else{
+          await axios.delete(backendUrl+`/api/remove-cart-item`, {
+            data: {
+              productId: productId,
+              variationId: variationId
+            }
+          },{ withCredentials: true });
+        }
+        
 
-        console.log(itemDelete);
-        dispatch(fetchCartReducer(itemDelete.data.updatedCart.items));
+        // console.log(itemDelete);
+        dispatch(fetchCart());
       }catch(err){
         console.error("User not logged in or token expired", err);
         if(err.response.status == 403 || err.response.status == 401)
@@ -141,11 +170,13 @@ const Cart = ()=>{
     }
 
 
-    console.log(cart);
+    console.log(reduxCart);
     let cartTotal = 0;
-    if (Array.isArray(cart.structuredCart) && cart.structuredCart.length > 0) {
+    if (Array.isArray(reduxCart.items) && reduxCart.items.length > 0) {
    
-        (cart.structuredCart).map((item , index)=>{
+      console.log('got inside');
+        (reduxCart.items).map((item , index)=>{
+          console.log(item);
             cartTotal = cartTotal + item.variation.price*item.quan;
         })
         // console.log(total);
@@ -155,32 +186,38 @@ const Cart = ()=>{
 
     const [quantityUpdateButton , setUpdating] = useState(false);
     // 🔹 Update item quantity in backend
-    const updateQuan = async (id, type) => {
-      if (quantityUpdateButton) return; // prevent double click
-      setUpdating(true);
+    const updateQuan = async (id, productId,variationId,type) => {
+      console.log(id,productId,variationId);
+      // if (quantityUpdateButton) return; // prevent double click
+      // setUpdating(true);
       try {
-        
-        const cartItems = await axiosInstance.patch(`/api/update-item/${id}`, {
-          action: type, // "inc" or "dec"
-        });
+      const backendUrl = process.env.REACT_APP_BACKEND_URL;
+      const cartItems = await axios.patch(backendUrl+`/api/update-item`, {
+          action: type,          // "inc" or "dec"
+          itemId: id,
+          productId: productId,
+          variationId: variationId
+      },{ withCredentials: true } );
+      // setUpdating(false);
 
-        console.log("Updated cart:", cartItems.data);
-        dispatch(fetchCartReducer(cartItems.data.cart.items));
+        // console.log("Updated cart:", cartItems.data);
+        dispatch(fetchCart());
       } catch (err) {
         console.error("Error updating quantity:", err);
         if (err.response?.status === 403 || err.response?.status === 401) {
           dispatch(loginPopup({ showForm: true }));
         }
       }
-      setUpdating(false);
+      
     };
 
    
     // 🔹 Increase quantity
-    const incQuan = async (id) => {
+    const incQuan = async (id,productId,variationId) => {
+      console.log(id,productId,variationId);
       try {
         if(quantityUpdateButton) return;
-        await updateQuan(id, "inc");
+        await updateQuan(id,productId,variationId, "inc");
       } catch (err) {
         console.error("Error increasing quantity:", err);
       }
@@ -188,16 +225,16 @@ const Cart = ()=>{
     };
 
     // 🔹 Decrease quantity
-    const decQuan = async (id,quan) => {
+    const decQuan = async (id,productId,variationId,quan) => {
       if(quantityUpdateButton) return;
       if(quan<2)
         return;
       try {
-        await updateQuan(id, "dec");
+        await updateQuan(id,productId,variationId, "dec");
       } catch (err) {
         console.error("Error decreasing quantity:", err);
       }
-      setUpdating(false);
+
     };
 
 
@@ -225,7 +262,7 @@ const Cart = ()=>{
   {/* Breadcrumb Section End */}
   {/* Shopping Cart Section Begin */}
   {console.log('before empty caty',cart)}
-  {cart && Array.isArray(cart.structuredCart) && cart.structuredCart.length === 0 && (
+  {reduxCart.items && Array.isArray(reduxCart.items) && reduxCart.items.length === 0 && (
     <div 
       style={{ 
         display: "flex", 
@@ -267,7 +304,7 @@ const Cart = ()=>{
 
 
 
-  {cart && Array.isArray(cart.structuredCart) && cart.structuredCart.length>0 &&(
+  {reduxCart.items && Array.isArray(reduxCart.items) && reduxCart.items.length>0 &&(
   <section className="shopping-cart spad">
     <div className="container">
       <div className="row">
@@ -284,7 +321,7 @@ const Cart = ()=>{
               </thead>
               <tbody>
                 {console.log(cart)}
-                  {cart && Array.isArray(cart.structuredCart) && cart.structuredCart.length > 0 && cart.structuredCart.map((item, i) => (
+                  {reduxCart.items && Array.isArray(reduxCart.items) && reduxCart.items.length > 0 && reduxCart.items.map((item, i) => (
                     <tr key={item._id}>
                       <td className="product__cart__item">
                         <div className="product__cart__item__pic">
@@ -308,14 +345,14 @@ const Cart = ()=>{
                         <div className="product__details__cart__option">
                           <div className="quantity">
                             <div className="pro-qty">
-                              <span className="fa fa-angle-up dec qtybtn" onClick={() => incQuan(item._id)}></span>
+                              <span className="fa fa-angle-up dec qtybtn" onClick={() => incQuan(item._id,item.product.id, item.variation.id )}></span>
                               <input
                                 type="text"
                                 readOnly
                                 value={item.quan}
-                                onChange={(e) => updateQuan(item._id, parseInt(e.target.value))}
+                                onChange={(e) => updateQuan(item._id,item.product._id, item.variation._id,  parseInt(e.target.value))}
                               />
-                              <span className="fa fa-angle-down inc qtybtn" onClick={() => decQuan(item._id,item.quan)}></span>
+                              <span className="fa fa-angle-down inc qtybtn" onClick={() => decQuan(item._id,item.product.id, item.variation.id ,item.quan)}></span>
                             </div>
                           </div>
                         </div>
@@ -326,7 +363,7 @@ const Cart = ()=>{
                       </td>
 
                       <td className="cart__close">
-                        <i className="fa fa-close" onClick={() => removeItem(item._id)} />
+                        <i className="fa fa-close" onClick={() => removeItem(item._id,item.product.id, item.variation.id)} />
                       </td>
                     </tr>
                   ))}

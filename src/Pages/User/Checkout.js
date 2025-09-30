@@ -22,19 +22,27 @@ const CheckOut = ()=>{
       phone: ""
     });
     console.log(userDetails);
-    const authuser = useSelector((state) => state.auth.user);
+    const authuser = useSelector((state) => state.auth);
     const reduxCart = useSelector((state) => state.cart);
     const [cart , setCart] = useState({
       cartId:'',
       structuredCart:[]
     });
     const [paymentMethod , setPaymentMethod] = useState('stripe');
-    
+    const navigate = useNavigate();
     const dispatch = useDispatch();
     // console.log(authuser);
-    // useEffect(()=>{
-    //     setUserDetails(authuser);
-    // },[authuser]);
+    useEffect(() => {
+    // if (!authuser) {
+      // if you want popup login instead of redirect
+      // dispatch(loginPopup({ showForm: true }));
+      console.log(authuser);
+      if(authuser.loginChecked && authuser.user==null){
+        navigate("/cart"); // redirect to cart page
+      }
+      //
+    // }
+    }, [authuser, navigate, dispatch]);
     const [cartTotal , setCartTotal] = useState(0);
     useEffect(()=>{
 
@@ -57,9 +65,9 @@ const CheckOut = ()=>{
         // fetchCart();
         // calculate(cart);
      
-      if (Array.isArray(cart.structuredCart) && cart.structuredCart.length > 0) {
+      if (Array.isArray(reduxCart.items) && reduxCart.items.length > 0) {
           let total = 0;
-          (cart.structuredCart).map((item , index)=>{
+          (reduxCart.items).map((item , index)=>{
               total = total + item.variation.price*item.quan;
           })
           console.log(cartTotal);
@@ -67,44 +75,44 @@ const CheckOut = ()=>{
       }
       console.log("checkoutcarttotal",cartTotal);
 
-    },[cart]);
+    },[reduxCart]);
 
-        const getCartItems = async () => {
-              try{
-                    const backendUrl = process.env.REACT_APP_BACKEND_URL;
-                    const cartData = await axiosInstance.post(
-                        `${backendUrl}/api/get-user-cart-data`,
-                        { cart:reduxCart },   // body
-                        { withCredentials: true } // config
-                    );
+        // const getCartItems = async () => {
+        //       try{
+        //             const backendUrl = process.env.REACT_APP_BACKEND_URL;
+        //             const cartData = await axios.get(
+        //                 `${backendUrl}/api/get-cart-items`,
+        //                 { cart:reduxCart },   // body
+        //                 { withCredentials: true } // config
+        //             );
         
-                console.log(cartData.data);
-                if(authuser){
-                  setCart(cartData.data);
-                }else{
-                  setCart([]);
-                }
-              }catch(err){
+        //         console.log(cartData.data);
+        //         if(authuser){
+        //           setCart(cartData.data);
+        //         }else{
+        //           setCart([]);
+        //         }
+        //       }catch(err){
             
-                if(err.response.status == 403 || err.response.status == 401)
-                {
-                  console.error("User not logged in or token expired", err);
-                  dispatch(loginPopup({ showForm: true }));
-                }
+        //         if(err.response.status == 403 || err.response.status == 401)
+        //         {
+        //           console.error("User not logged in or token expired", err);
+        //           dispatch(loginPopup({ showForm: true }));
+        //         }
     
-              }
+        //       }
                 
-        };
-        useEffect(()=>{
-          console.log(reduxCart);
-          if(!authuser){
-            setCart([]);
-          }
-          if(Array.isArray(reduxCart.items)){
-            console.log('oklkkkkkkkk');
-              getCartItems();
-          }
-        },[reduxCart]);
+        // };
+        // useEffect(()=>{
+        //   console.log(reduxCart);
+        //   if(!authuser){
+        //     setCart([]);
+        //   }
+        //   if(Array.isArray(reduxCart.items)){
+        //     console.log('oklkkkkkkkk');
+        //       getCartItems();
+        //   }
+        // },[reduxCart]);
     
     const handleUserDetailsChangeForm = (e)=>{
         const {name,value} = e.target;
@@ -131,7 +139,7 @@ const CheckOut = ()=>{
       // setPaymentMethod
     }
     
-    const navigate = useNavigate();
+    // const navigate = useNavigate();
     const [isPlacingOrder, setIsPlacingOrder] = useState(false);
 
     const validateUserDetails = (userDetails) => {
@@ -286,7 +294,7 @@ const CheckOut = ()=>{
                       <div className="checkout__order__products">Product <span>Total</span></div>
                       {console.log("checkout cart",cart)}
                       <ul className="checkout__total__products">
-                        {cart && Array.isArray(cart.structuredCart) && cart.structuredCart.length>0 && cart.structuredCart.map((item , ind)=>{
+                        {cart && Array.isArray(reduxCart.items) && reduxCart.items.length>0 && reduxCart.items.map((item , ind)=>{
                           return(
                              <li>{ind+1}. {item.quan} x {item.product?.name} <span>$ {item.quan * item.variation.price}</span></li>
                           )
