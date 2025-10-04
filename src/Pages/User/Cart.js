@@ -126,7 +126,7 @@ const Cart = ()=>{
     },[]);
 
     const removeItem = async(id,productId , variationId) =>{
-      alert(id);
+      // alert(id);
       // const cartId = cart.cartId;
       // alert(cartId);
       // return;
@@ -138,12 +138,13 @@ const Cart = ()=>{
             withCredentials: true 
           });
         }else{
-          await axios.delete(backendUrl+`/api/remove-cart-item`, {
+          await axios.delete(`${backendUrl}/api/remove-cart-item`, {
             data: {
-              productId: productId,
-              variationId: variationId
-            }
-          },{ withCredentials: true });
+              productId,
+              variationId
+            },
+            withCredentials: true, // ✅ put it here inside same object
+          });
         }
         
 

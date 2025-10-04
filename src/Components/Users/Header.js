@@ -701,6 +701,9 @@ useEffect(() => {
                     <li>
                      <Link to="/men/men-jeans">Men Denims</Link>
                     </li>
+                    <li>
+                     <Link to="/men/men-shirts">Men Shirts</Link>
+                    </li>
                     {/* <li><a href="#">Pages</a>
                     <ul className="dropdown">
                         <li><Link to="/about-us">About Us</Link></li>

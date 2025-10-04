@@ -497,10 +497,15 @@ const Store = () =>{
                 setCatProducts(filterProducts.data.products);
                 const products = (filterProducts.data.products);
                 // console.log(products);
+                let end = filterProducts.data.currentPage * filterProducts.data.perPage;
+                if (end > filterProducts.data.products.length) end = filterProducts.data.products.length;
                 setPageInfo({
                     currentPage: filterProducts.data.currentPage,
                     totalPages: filterProducts.data.totalPages,
-                    totalProducts: filterProducts.data.total_products,
+                    totalProducts: filterProducts.data.totalProducts,
+                    start : (filterProducts.data.currentPage - 1) * filterProducts.data.perPage + 1,
+                    end : end,
+                    perPage: filterProducts.data.perPage
                 });
                 const minPrice = filterProducts.data.lowestPrice;
                 const maxPrice = filterProducts.data.highestPrice;
@@ -577,10 +582,15 @@ const Store = () =>{
             });
             setLoading(false);
             setCatProducts(filterProducts.data.products);
+            let end = filterProducts.data.currentPage * filterProducts.data.perPage;
+            if (end > filterProducts.data.products.length) end = filterProducts.data.totalProducts;
             setPageInfo({
                 currentPage: filterProducts.data.currentPage,
                 totalPages: filterProducts.data.totalPages,
-                totalProducts: filterProducts.data.total_products,
+                totalProducts: filterProducts.data.totalProducts,
+                start : (filterProducts.data.currentPage - 1) * filterProducts.data.perPage + 1,
+                end : end,
+                perPage: filterProducts.data.perPage
             });
             
         }catch(err){
@@ -691,13 +701,13 @@ const Store = () =>{
                                                 <li key={brand}>
                                                     <a
                                                         href="#"
-                                                        className={filterBrands.some(b => b === brand) ? "brandselected" : "brandnotselected"}
+                                                        className={filterBrands.some(b => b === brand._id) ? "brandselected" : "brandnotselected"}
                                                         onClick={(e) => {
                                                         e.preventDefault();
-                                                        toggleBrand(brand);
+                                                        toggleBrand(brand._id);
                                                         }}
                                                     >
-                                                        {brand}
+                                                        {brand.brand}
                                                     </a>
                                                 </li>
                                             );
@@ -748,10 +758,10 @@ const Store = () =>{
                                     <div className="shop__sidebar__size">
                                         {productColors && productColors.length>0 && productColors.map((color)=>{
                                             return(
-                                                <label htmlFor="" key={color} className={filterColors.some(c=>color==c)?'box-color active':'box-color'}  onClick={(e) => {
+                                                <label htmlFor="" key={color._id} className={filterColors.some(c=>color._id==c)?'box-color active':'box-color'}  onClick={(e) => {
                                                     e.preventDefault();
-                                                    toggleColors(color);
-                                                    }} >{color}
+                                                    toggleColors(color._id);
+                                                    }} >{color.color}
                                                     <input type="radio" id="" />
                                                 </label>
                                             );
@@ -790,7 +800,12 @@ const Store = () =>{
                             <div className="col-lg-6 col-md-6 col-sm-6">
                             <div className="shop__product__option__left">
                                 {/* { console.log(catProducts.currentPage)} */}
-                                <p>Showing {(pageInfo.currentPage - 1) * 3 + 1}–{Math.min(pageInfo.currentPage * 3, pageInfo.totalProducts)} of {pageInfo.totalProducts} results</p>
+                                {catProducts.length>0 && 
+                                    <p>Showing {pageInfo.start}–{pageInfo.end} of {pageInfo.totalProducts} results</p>
+                                }
+                                {catProducts.length==0 && 
+                                    <p>No Products Found</p>
+                                }
                             </div>
                             </div>
                             <div className="col-lg-6 col-md-6 col-sm-6">
