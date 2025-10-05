@@ -196,6 +196,7 @@ const Header = () => {
         // NotificationManager.success('Success message', 'Title here');
         e.preventDefault();
         const backendUrl = process.env.REACT_APP_BACKEND_URL;
+        console.log(process.env);
         const userDetails = {
             email: LoginformData.userEmail,
             pass: LoginformData.userPassword,
@@ -686,7 +687,7 @@ useEffect(() => {
             <div className="row">
             <div className="col-lg-3 col-md-3">
                 <div className="header__logo">
-                <a href="./index.html"><img src="/assets/img/logo.png" alt="" /></a>
+                <Link to="/"><img src="/assets/img/logo.png" alt="" /></Link>
                 </div>
             </div>
             <div className="col-lg-6 col-md-6">
