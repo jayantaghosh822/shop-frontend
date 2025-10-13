@@ -28,37 +28,39 @@ import Product from './Pages/User/Product.js';
 // import { reduxAddToCart } from './redux/cartSlice';
 // Import jQuery if using it (since React doesn't include it by default)
 // import $ from "jquery";
+import Signin from './Pages/User/Signin.js';
 import Cart from './Pages/User/Cart.js';
 import CheckOut from './Pages/User/Checkout.js';
 import OrderPlaced from './Pages/User/OrderPlaced.js';
 import StripePayment from './Pages/User/StripePayment.js';
 import EmailVerificationConfirmed from './Pages/User/EmailVerified.js';
 import axiosInstance from '../src/Interceptor/axiosInstance.js'; // path to your interceptor file
+import Signup from './Pages/User/Signup.js';
 
 const App = () => {
-  const dispatch = useDispatch();
-   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const backendUrl = process.env.REACT_APP_BACKEND_URL;
-        const res = await axiosInstance.get(`${backendUrl}/api/user/me`, {
-          withCredentials: true,
-        });
-        console.log(res);
-        if (res.data?.user) {
-          dispatch(loginSuccess({ user: res.data.user }));
-        }
-      } catch (err) {
-        // console.error("User not logged in or token expired", err);
-        // dispatch(loginPopup({ showForm: true }));
-        // dispatch(logout()); // Optional: in case you want to clear auth state
-        dispatch(loginChecked());
-      }
-    };
+  // const dispatch = useDispatch();
+  //  useEffect(() => {
+  //   const fetchUser = async () => {
+  //     try {
+  //       const backendUrl = process.env.REACT_APP_BACKEND_URL;
+  //       const res = await axiosInstance.get(`${backendUrl}/api/user/me`, {
+  //         withCredentials: true,
+  //       });
+  //       console.log(res);
+  //       if (res.data?.user) {
+  //         dispatch(loginSuccess({ user: res.data.user }));
+  //       }
+  //     } catch (err) {
+  //       // console.error("User not logged in or token expired", err);
+  //       // dispatch(loginPopup({ showForm: true }));
+  //       // dispatch(logout()); // Optional: in case you want to clear auth state
+  //       dispatch(loginChecked());
+  //     }
+  //   };
 
-    fetchUser();
+  //   fetchUser();
     
-  }, [dispatch]);
+  // }, [dispatch]);
 
   //   useEffect(() => {
   //   // const authuser = localStorage.getItem("authToken"); // or however you check
@@ -76,6 +78,8 @@ const App = () => {
         <Route path="/" element={<Layout />}>
           <Route index element={<HomePage />} />
           <Route path="modal" element={<MyModal />} />
+          <Route path="signin" element={<Signin />} />
+          <Route path="signup" element={<Signup />} />
           <Route path="password-reset">
             <Route index element={<ResetPassword />} />
             <Route path=":userID/:token" element={<ResetPassword />} />
@@ -83,6 +87,7 @@ const App = () => {
           <Route path="verify-email/:token" element={<EmailVerificationConfirmed />} />
           <Route path="store" element={<Store />} />
           <Route path=":category/:subcategory" element={<Store />} />
+          <Route path=":category" element={<Store />} />
           <Route path="p/:p" element={<Product />} />
           <Route path="cart" element={<Cart />} /> 
           <Route path="checkout" element={<CheckOut />} />

@@ -269,8 +269,11 @@ const Store = () =>{
     const [filterColors,setfilterColors] = useState([]);
     //filtering products
 
-    const { category, subcategory } = useParams();
+    let { category, subcategory } = useParams();
 
+    if(!subcategory){
+        subcategory = category;
+    }
     // alert(subcategory);
     
     const toggleBrand = (brandId)=> {
@@ -809,14 +812,14 @@ const Store = () =>{
                             </div>
                             </div>
                             <div className="col-lg-6 col-md-6 col-sm-6">
-                            <div className="shop__product__option__right">
+                            {/* <div className="shop__product__option__right">
                                 <p>Sort by Price:</p>
                                 <select>
                                 <option value>Low To High</option>
                                 <option value>$0 - $55</option>
                                 <option value>$55 - $100</option>
                                 </select>
-                            </div>
+                            </div> */}
                            
                             </div>
                         </div>

@@ -4,7 +4,7 @@ import axios from 'axios';
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useDispatch } from "react-redux";
-import { loginSuccess,logout } from "../../redux/authSlice";
+import { loginSuccess,logout,loginChecked } from "../../redux/authSlice";
 import { useSelector } from "react-redux";
 import { Outlet, Link } from "react-router-dom";
 import { GoogleLogin } from '@react-oauth/google';
@@ -374,15 +374,44 @@ const Header = () => {
     
   
 
-const [cartFetched, setCartFetched] = useState(false);
+    const [cartFetched, setCartFetched] = useState(false);
 
-useEffect(() => {
-  console.log("beforetofetch", authuser);
-  if (!cartFetched) {
-    setCartFetched(true);
-    dispatch(fetchCart());
-  }
-}, [dispatch, authuser, cartFetched]);
+    // useEffect(() => {
+    // console.log("beforetofetch", authuser);
+    // if (!cartFetched) {
+    //     setCartFetched(true);
+    //     dispatch(fetchCart());
+    //     setCartFetched(false);
+    // }
+    // }, [dispatch, authuser, cartFetched]);
+
+    const fetchUser = async () => {
+      try {
+        const backendUrl = process.env.REACT_APP_BACKEND_URL;
+        const res = await axios.get(`${backendUrl}/api/user/me`, {
+          withCredentials: true,
+        });
+        console.log("header usererer",res);
+        if (res.data?.user) {
+          dispatch(loginSuccess({ user: res.data.user }));
+        }
+      } catch (err) {
+        // console.error("User not logged in or token expired", err);
+        // dispatch(loginPopup({ showForm: true }));
+        dispatch(logout()); // Optional: in case you want to clear auth state
+        dispatch(loginChecked());
+      }
+    };
+    useEffect(() => {
+    console.log("beforetofetch", authuser);
+    if (!cartFetched) {
+        // setCartFetched(true);
+        dispatch(fetchCart());
+        fetchUser();
+        // setCartFetched(false);
+    }
+    }, [location.pathname]);
+
 
 
     const loginFormPopup = useSelector((state) => state.auth.showLoginForm);
@@ -397,10 +426,10 @@ useEffect(() => {
     // const [cartSidebar , setCartSidebar] = useState(false);
 
     const handleCartCheckOut = ()=>{
-        if(!authuser){
-            showloginForm(true);
+        // if(!authuser){
+            // showloginForm(true);
             document.getElementById('cart-close').click();
-        }
+        // }
         
     }
 
@@ -522,7 +551,7 @@ useEffect(() => {
             </div>
             </div>
         </div>
-        <div id="signup" className={registerFormState?'formshow':'formhide'} ref={registerRef}>
+        {/* <div id="signup" className={registerFormState?'formshow':'formhide'} ref={registerRef}>
             <form onSubmit={Register}>
                 <button type="button" id="close-btn" onClick={RegisterFormToggle}>×</button>
                 <label>Your First Name</label>
@@ -594,7 +623,7 @@ useEffect(() => {
                 }
              
             </div>
-        </div>
+        </div> */}
         {/* Page Preloder */}
         {/* <div id="preloder"  ref={preloaderRef} >
             <div className="loader" ref={loaderRef} />
@@ -606,8 +635,8 @@ useEffect(() => {
         <div className="offcanvas__option">
             <div className="offcanvas__links">
            
-            <a href="#" onClick={(e) => { e.preventDefault(); RegisterFormToggle(); }}>{authuser?(authuser.name):'Sign up'}</a>
-            <a href="#" onClick={(e) => { e.preventDefault(); LoginFormToggle(); }}>Sign in</a>
+            <Link to="/signup">{authuser?(authuser.name):'Sign up'}</Link>
+            <Link to="/signin">Sign in</Link>
             <a href="#" hidden={displaynameState}>{authuser?(authuser.displayName):''}</a>
             <a href="" onClick={(e) => { e.preventDefault(); LogOut(); }}>
                 Logout
@@ -652,8 +681,8 @@ useEffect(() => {
                     {
                     (!authuser) && (
                         <>
-                        <a href="#" onClick={(e) => { e.preventDefault(); RegisterFormToggle(); }} >Sign up</a>
-                        <a href="#" onClick={(e) => { e.preventDefault(); LoginFormToggle(); }} >Sign in</a>
+                        <Link to="/signup">{authuser?(authuser.name):'Sign up'}</Link>
+                        <Link to="/signin">Sign in</Link>
                         </>
                     )
                     }
@@ -693,7 +722,7 @@ useEffect(() => {
             <div className="col-lg-6 col-md-6">
                 <nav className="header__menu mobile-menu">
                 <ul>
-                    <li className="active">
+                    <li>
                     <Link to="/">Home</Link>
                     </li>
                     <li>
@@ -704,6 +733,9 @@ useEffect(() => {
                     </li>
                     <li>
                      <Link to="/men/men-shirts">Men Shirts</Link>
+                    </li>
+                    <li>
+                     <Link to="/backpacks">Backpacks</Link>
                     </li>
                     {/* <li><a href="#">Pages</a>
                     <ul className="dropdown">

@@ -7,6 +7,7 @@ import { loginSuccess,logout,loginPopup } from "../../redux/authSlice";
 import { fetchCartReducer } from "../../redux/cartSlice";
 import { fetchCart,cleanCart } from '../../redux/cartSlice';
 import { Outlet, Link } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const Cart = ()=>{
     const authuser = useSelector((state) => state.auth.user);
@@ -15,94 +16,11 @@ const Cart = ()=>{
       cartId:'',
       structuredCart:[]
     });
-    // const [cartTotal , setTotal] = useState(0);
-    // const calculate =(cart)=>{
-    //     console.log(cart.items);
-    //     let cartTotal = 0;
-
-    //     for (const key in cart.items) {
-    //         const item = cart.items[key];
-    //         // console.log();
-    //         const price = item.metaData.price;
-    //         const quantity = item.quan || 1;
-    //         cartTotal += price * quantity;
-    //     }
-    //     setTotal(cartTotal);
-    // }
+   
     const dispatch = useDispatch();
-    // const getCartItems = async () => {
-    //     if(authuser){
-    //       try{
-    //         const backendUrl = process.env.REACT_APP_BACKEND_URL;
-    //         let cartData = '';
-    //         if(authuser){
-    //              cartData = await axiosInstance.post(
-    //                 `${backendUrl}/api/get-user-cart-data`,
-    //                 { cart:reduxCart },   // body
-    //                 { withCredentials: true } // config
-    //             );
-    //         }
-                
-               
-    
-    //         console.log(cartData.data);
-    //         // if(authuser){
-    //           setCart(cartData.data);
-    //         // }else{
-    //         //   setCart([]);
-    //         // }
-    //       }catch(err){
-        
-    //         if(err.response.status == 403 || err.response.status == 401)
-    //         {
-    //           console.error("User not logged in or token expired", err);
-    //           dispatch(loginPopup({ showForm: true }));
-    //         }
-
-    //       }
-    //     }else{
-    //       //   const backendUrl = process.env.REACT_APP_BACKEND_URL;
-    //       //   let cartData = '';
-    //       //   cartData = await axios.post(
-    //       //     `${backendUrl}/api/get-cart-data`,
-    //       //     { cart:reduxCart },   // body
-    //       //     { withCredentials: true } // config
-    //       //   );
-    //       // setCart(cartData.data);
-    //     }
-            
-    // };
-    // useEffect(()=>{
-    //   console.log(reduxCart);
-    //   // if(!authuser){
-    //   //   setCart([]);
-    //   // }
-    //   if(Array.isArray(reduxCart.items)){
-    //     console.log('oklkkkkkkkk');
-    //       getCartItems();
-    //   }
-    // },[reduxCart]);
-
-    
-    // const dispatch = useDispatch();
-    // const fetchCart = async()=>{
-    //   try{
-    //     const cartItems = await axiosInstance.get(`/api/get-cart-items/`);
-    //     console.log(cartItems);
-    //     setCart(cartItems.data.cartItems);
-    //     dispatch(fetchCartReducer(cartItems.data.cartItems));
-    //   }catch(err){
-        
-    //     if(err.response.status == 403 || err.response.status == 401)
-    //     {
-    //       console.error("User not logged in or token expired", err);
-    //       dispatch(loginPopup({ showForm: true }));
-    //     }
-
-    //   }
-     
-          
-    // }
+    const navigate = useNavigate();
+    const location = useLocation(); // to capture current page URL
+    const currentPath = location.pathname + location.search;
     useEffect(()=>{
 
         const script = document.createElement("script");
@@ -153,11 +71,13 @@ const Cart = ()=>{
       }catch(err){
         console.error("User not logged in or token expired", err);
         if(err.response.status == 403 || err.response.status == 401)
-        dispatch(loginPopup({ showForm: true }));
+        navigate(`/signin?ref=${encodeURIComponent(currentPath)}`);
       }
     }
-
+    
     const updateCart = async()=>{
+     
+      
       try{
         const cartItems = await axiosInstance.get(`/api/get-cart-items/`);
         console.log(cartItems);
@@ -165,7 +85,11 @@ const Cart = ()=>{
       }catch(err){
         console.error("User not logged in or token expired", err);
         if(err.response.status == 403 || err.response.status == 401)
-        dispatch(loginPopup({ showForm: true }));
+        // dispatch(loginPopup({ showForm: true }));
+        
+
+        // redirect to signin with referrer param
+        navigate(`/signin?ref=${encodeURIComponent(currentPath)}`);
         // dispatch(logout()); // Optional: in case you want to clear auth state
       }
     }
@@ -206,7 +130,7 @@ const Cart = ()=>{
       } catch (err) {
         console.error("Error updating quantity:", err);
         if (err.response?.status === 403 || err.response?.status === 401) {
-          dispatch(loginPopup({ showForm: true }));
+          navigate(`/signin?ref=${encodeURIComponent(currentPath)}`);
         }
       }
       

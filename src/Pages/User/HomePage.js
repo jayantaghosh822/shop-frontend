@@ -1,6 +1,7 @@
 import React from 'react';
 import Layout from '../../Layouts/User/Layout';
 import { useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import useScript from "../../Hooks/jsLoader";
 const HomePage = () => {
   useScript([
@@ -17,11 +18,11 @@ const HomePage = () => {
                 <div className="row">
                   <div className="col-xl-5 col-lg-7 col-md-8">
                     <div className="hero__text">
-                      <h6>Summer Collection</h6>
-                      <h2>Fall - Winter Collections 2030</h2>
+                      {/* <h6>Summer Collection</h6> */}
+                      <h2>Men T-Shirts Collections</h2>
                       <p>A specialist label creating luxury essentials. Ethically crafted with an unwavering
                         commitment to exceptional quality.</p>
-                      <a href="#" className="primary-btn">Shop now <span className="arrow_right" /></a>
+                      <Link to="/men/men-t-shirts" className="primary-btn">Shop now <span className="arrow_right" /></Link>
                       <div className="hero__social">
                         <a href="#"><i className="fa fa-facebook" /></a>
                         <a href="#"><i className="fa fa-twitter" /></a>
@@ -38,11 +39,11 @@ const HomePage = () => {
                 <div className="row">
                   <div className="col-xl-5 col-lg-7 col-md-8">
                     <div className="hero__text">
-                      <h6>Summer Collection</h6>
-                      <h2>Fall - Winter Collections 2030</h2>
+                      {/* <h6>Summer Collection</h6> */}
+                      <h2>Men Shirt Collections</h2>
                       <p>A specialist label creating luxury essentials. Ethically crafted with an unwavering
                         commitment to exceptional quality.</p>
-                      <a href="#" className="primary-btn">Shop now <span className="arrow_right" /></a>
+                      <Link to="/men/men-shirts" className="primary-btn">Shop now <span className="arrow_right" /></Link>
                       <div className="hero__social">
                         <a href="#"><i className="fa fa-facebook" /></a>
                         <a href="#"><i className="fa fa-twitter" /></a>
@@ -67,19 +68,19 @@ const HomePage = () => {
                     <img src="/assets/img/banner/banner-1.jpg" alt="" />
                   </div>
                   <div className="banner__item__text">
-                    <h2>Clothing Collections 2030</h2>
-                    <a href="#">Shop now</a>
+                    <h2>Clothing Collections Men Jackets</h2>
+                    <Link to="/men/men-jackets">Shop now</Link>
                   </div>
                 </div>
               </div>
               <div className="col-lg-5">
                 <div className="banner__item banner__item--middle">
                   <div className="banner__item__pic">
-                    <img src="/assets/img/banner/banner-2.jpg" alt="" />
+                    <img src="http://res.cloudinary.com/dychqyphl/image/upload/v1760255012/product_gallery_0_1760255010046.webp" alt="" />
                   </div>
                   <div className="banner__item__text">
-                    <h2>Accessories</h2>
-                    <a href="#">Shop now</a>
+                    <h2>Men Denims</h2>
+                    <Link to="/men/men-jeans">Shop now</Link>
                   </div>
                 </div>
               </div>
@@ -89,8 +90,8 @@ const HomePage = () => {
                     <img src="/assets/img/banner/banner-3.jpg" alt="" />
                   </div>
                   <div className="banner__item__text">
-                    <h2>Shoes Spring 2030</h2>
-                    <a href="#">Shop now</a>
+                    <h2>Men Shoes Spring 2030</h2>
+                    <Link to="/men/men-shoes">Shop now</Link>
                   </div>
                 </div>
               </div>
@@ -99,7 +100,7 @@ const HomePage = () => {
         </section>
         {/* Banner Section End */}
         {/* Product Section Begin */}
-        <section className="product spad">
+        {/* <section className="product spad">
           <div className="container">
             <div className="row">
               <div className="col-lg-12">
@@ -388,7 +389,7 @@ const HomePage = () => {
               </div>
             </div>
           </div>
-        </section>
+        </section> */}
         {/* Product Section End */}
         {/* Categories Section Begin */}
         <section className="categories spad">
@@ -430,7 +431,7 @@ const HomePage = () => {
                       <p>Seconds</p>
                     </div>
                   </div>
-                  <a href="#" className="primary-btn">Shop now</a>
+                  <Link to="/backpacks" className="primary-btn">Shop now</Link>
                 </div>
               </div>
             </div>
@@ -438,7 +439,7 @@ const HomePage = () => {
         </section>
         {/* Categories Section End */}
         {/* Instagram Section Begin */}
-        <section className="instagram spad">
+        {/* <section className="instagram spad">
           <div className="container">
             <div className="row">
               <div className="col-lg-8">
@@ -461,10 +462,10 @@ const HomePage = () => {
               </div>
             </div>
           </div>
-        </section>
+        </section> */}
         {/* Instagram Section End */}
         {/* Latest Blog Section Begin */}
-        <section className="latest spad">
+        {/* <section className="latest spad">
           <div className="container">
             <div className="row">
               <div className="col-lg-12">
@@ -507,7 +508,7 @@ const HomePage = () => {
               </div>
             </div>
           </div>
-        </section>
+        </section> */}
         {/* Latest Blog Section End */}
       </div>
     </>

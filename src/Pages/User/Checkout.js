@@ -3,9 +3,12 @@ import axiosInstance from '../../Interceptor/axiosInstance'; // path to your int
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
 import { loginSuccess,logout,loginPopup } from "../../redux/authSlice";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate ,useLocation } from 'react-router-dom';
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { googleLogout, useGoogleLogin } from '@react-oauth/google';
+import axios from 'axios';
+import { fetchCart,cleanCart } from '../../redux/cartSlice';
 
 const CheckOut = ()=>{
 
@@ -31,18 +34,64 @@ const CheckOut = ()=>{
     const [paymentMethod , setPaymentMethod] = useState('stripe');
     const navigate = useNavigate();
     const dispatch = useDispatch();
+    const location = useLocation(); // to 
+    const cartPath = '/cart';
+    console.log(cartPath);
     // console.log(authuser);
+     // log out function to log the user out of google and set the profile array to null
+    const LogOut = async () => {
+          googleLogout();
+          try {
+              const backendUrl = process.env.REACT_APP_BACKEND_URL;
+              const res = await axios.post(
+              backendUrl + '/api/user/log-out',
+              {},
+              { withCredentials: true }
+              );
+              alert("logging out ");
+              dispatch(logout());
+              dispatch(cleanCart());
+              // setCartData([]);
+          } catch (err) {
+              console.log(err);
+              if (err.response?.status === 403 || err.response?.status === 401) {
+              dispatch(logout());
+              dispatch(cleanCart());
+              // setCartData([]);
+              }
+          }
+    };
+    const fetchUser = async () => {
+      try {
+        const backendUrl = process.env.REACT_APP_BACKEND_URL;
+        const res = await axiosInstance.get(`${backendUrl}/api/user/me`, {
+          withCredentials: true,
+        });
+        // console.log(res);
+        // if (res.data?.user) {
+        //   dispatch(loginSuccess({ user: res.data.user }));
+        // }
+      } catch (err) {
+        // console.error("User not logged in or token expired", err);
+        // dispatch(loginPopup({ showForm: true }));
+        // dispatch(logout()); // Optional: in case you want to clear auth state
+        // dispatch(loginChecked());
+        navigate(`/signin?ref=${encodeURIComponent(cartPath)}`);
+        LogOut();
+      }
+    };
     useEffect(() => {
     // if (!authuser) {
       // if you want popup login instead of redirect
       // dispatch(loginPopup({ showForm: true }));
       console.log(authuser);
-      if(authuser.loginChecked && authuser.user==null){
-        navigate("/cart"); // redirect to cart page
-      }
+      fetchUser();
+      // if(authuser.loginChecked && authuser.user==null){
+       
+      // }
       //
     // }
-    }, [authuser, navigate, dispatch]);
+    }, []);
     const [cartTotal , setCartTotal] = useState(0);
     useEffect(()=>{
 

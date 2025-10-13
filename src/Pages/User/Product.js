@@ -275,11 +275,11 @@ const Product = () =>{
                         <h3>
                             {calculatePriceRange(product,selectedVariation)}
                         </h3>
-                        <p>
+                        {/* <p>
                             Coat with quilted lining and an adjustable hood. Featuring long
                             sleeves with adjustable cuff tabs, adjustable asymmetric hem
                             with elastic side tabs and a front zip fastening with placket.
-                        </p>
+                        </p> */}
 
                         <div className="product__details__option">
                             {product?.attributes?.map((attr) => (
@@ -308,14 +308,14 @@ const Product = () =>{
                             add to cart
                             </a>
                         </div>
-                        <div className="product__details__btns__option">
+                        {/* <div className="product__details__btns__option">
                             <a href="#">
                             <i className="fa fa-heart" /> add to wishlist
                             </a>
                             <a href="#">
                             <i className="fa fa-exchange" /> Add To Compare
                             </a>
-                        </div>
+                        </div> */}
                         <div className="product__details__last__option">
                             <h5>
                             <span>Guaranteed Safe Checkout</span>
@@ -518,7 +518,7 @@ const Product = () =>{
             </section>
             {/* Shop Details Section End */}
             {/* Related Section Begin */}
-            <section className="related spad">
+            {/* <section className="related spad">
                 <div className="container">
                 <div className="row">
                     <div className="col-lg-12">
@@ -738,7 +738,7 @@ const Product = () =>{
                     </div>
                 </div>
                 </div>
-            </section>
+            </section>  */}
             {/* Related Section End */}
         </>
 
